@@ -1,2 +1,5 @@
+# lfs macro
+[attr]lfs -text filter=lfs diff=lfs merge=lfs
+
 # Auto detect text files and perform LF normalization
 * text=auto
