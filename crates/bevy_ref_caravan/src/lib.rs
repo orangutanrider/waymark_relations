@@ -1,5 +1,5 @@
+mod common;
 mod caravan;
-
 mod syntax_in;
 mod syntax_out;
 
