@@ -1,3 +1,4 @@
+mod root_step;
 mod entity_step;
 mod query_step;
 mod bindings_step;
@@ -24,8 +25,7 @@ impl Caravan {
         }
     }
 
-    fn into_nested(
-        &self,
+    fn new(
         iter: TokenIter, 
         package: TokenStream, 
         depth: u32,

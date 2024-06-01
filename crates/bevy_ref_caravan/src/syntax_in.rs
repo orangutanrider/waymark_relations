@@ -29,7 +29,5 @@ pub(crate) const ENTIY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
 // Symbols
 pub(crate) const INPUT_LINE_BREAK: char = ';';
 pub(crate) const EXIT_RULE_NOTATION: char = '?';
-pub(crate) const ENTITY_TO_QUERY_PUNCT_1: char = ':'; // ::
-pub(crate) const ENTITY_TO_QUERY_PUNCT_2: char = ':';
-pub(crate) const NEXT_PATTERN_PUNCT_1: char = '-'; // ->
-pub(crate) const NEXT_PATTERN_PUNCT_2: char = '>'; 
+pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = [':', ':']; // ::
+pub(crate) const NEXT_PATTERN_PUNCT: [char; 2] = ['-', '>']; // ->
