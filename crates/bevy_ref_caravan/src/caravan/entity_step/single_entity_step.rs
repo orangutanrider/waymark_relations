@@ -1,4 +1,4 @@
-use std::{process::id, str::FromStr};
+use std::str::FromStr;
 use proc_macro::*;
 
 use crate::*;
@@ -26,51 +26,26 @@ pub(super) fn single_entity_step(caravan: Caravan, current: TokenTree, wildcard:
         },
         // Construct lifted binding, add to package, then move to query step.
         EntityBindingKind::Lifted => {
-            let lifted_clause = match lift_entity_clause(entity_clause) { // Lift entity clause
+            let entity_clause_iter = TokenStream::from_iter(entity_clause.clone().into_iter()).into_iter(); // Structure conversions...
+            let lifted_clause = match create_lifted_clause(entity_clause_iter) { // Create lifted entity clause.
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
 
-            // Create binding elements
-            let Ok(let_token) = TokenStream::from_str("let") else { // let
-                return Err(())
+            let binding = match construct_lifted_binding(lifted_clause, &entity_clause) { // Construct binding (let lifted_clause = entity_clause.go();)
+                Ok(ok) => ok,
+                Err(err) => return Err(err), 
             };
-            let Ok(eq_token) = TokenStream::from_str("=") else { // =
-                return Err(());
-            };
-            let Ok(go_method) = TokenStream::from_str(&(TO_ENTITY_FN.to_owned() + ";")) else { // .go();
-                return Err(())
-            };
-
-            // Construct binding
-            let mut binding = let_token; // let
-            binding.extend(lifted_clause.clone()); // let lifted_clause
-            binding.extend(eq_token.clone()); // let lifted_clause =
-            binding.extend(entity_clause.clone()); // let lifted_clause = entity_clause
-            binding.extend(go_method); // let lifted_clause = entity_clause.go();
 
             caravan.pack(binding); // Add binding to caravan package.
             todo!()
         },
         // Construct overlap binding, add to package, then move to query step.
         EntityBindingKind::Overlap => {
-            // Create binding elements
-            let Ok(let_token) = TokenStream::from_str("let") else { // let
-                return Err(())
+            let binding = match construct_overlap_binding(entity_clause) { // Construct binding (let entity_clause = entity_clause.go();)
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
-            let Ok(eq_token) = TokenStream::from_str("=") else { // =
-                return Err(());
-            };
-            let Ok(go_method) = TokenStream::from_str(&(TO_ENTITY_FN.to_owned() + ";")) else { // .go();
-                return Err(())
-            };
-
-            // Construct binding
-            let mut binding = let_token; // let
-            binding.extend(entity_clause.clone()); // let entity_clause
-            binding.extend(eq_token); // let entity_clause =
-            binding.extend(entity_clause.clone()); // let entity_clause = entity_clause
-            binding.extend(go_method); // let entity_clause = entity_clause.go();
 
             caravan.pack(binding); // Add binding to caravan package.
             todo!()
@@ -106,10 +81,10 @@ fn collect_until_clause_end(
     }
 }
 
-fn lift_entity_clause(entity_clause: TokenStream) -> Result<TokenStream, ()> {
+fn create_lifted_clause(entity_clause: TokenIter) -> Result<TokenStream, ()> {
     // Iterate until the first ident is found, apply lift edits to that part of the token stream, reconstruct token stream and return.
 
-    let (iter, processed, ident) = until_ident(entity_clause.into_iter()); // Get ident.
+    let (iter, processed, ident) = until_ident(entity_clause); // Get ident.
 
     let Some(ident) = ident else { // No ident was found; an invalid entity clause.
         return Err(())
@@ -136,4 +111,50 @@ fn lift_entity_clause(entity_clause: TokenStream) -> Result<TokenStream, ()> {
     entity_clause.extend(iter); // Add un-processed tokens.
 
     return Ok(entity_clause)
+}
+
+fn construct_lifted_binding(lifted_clause: TokenStream, entity_clause: &Vec<TokenTree>) -> Result<TokenStream, ()> {
+    // Create binding elements
+    let Ok(let_token) = TokenStream::from_str("let") else { // let
+        return Err(())
+    };
+    let Ok(eq_token) = TokenStream::from_str("=") else { // =
+        return Err(())
+    };
+    let Ok(go_method) = TokenStream::from_str(&(TO_ENTITY_FN.to_owned() + ";")) else { // .go();
+        return Err(())
+    };
+
+    // Construct binding
+    let mut binding = let_token; // let
+    binding.extend(lifted_clause.clone()); // let lifted_clause
+    binding.extend(eq_token.clone()); // let lifted_clause =
+    binding.extend(entity_clause.clone()); // let lifted_clause = entity_clause
+    binding.extend(go_method); // let lifted_clause = entity_clause.go();
+    
+    // Return
+    return Ok(binding)
+}
+
+fn construct_overlap_binding(entity_clause: Vec<TokenTree>) -> Result<TokenStream, ()> {
+    // Create binding elements
+    let Ok(let_token) = TokenStream::from_str("let") else { // let
+        return Err(())
+    };
+    let Ok(eq_token) = TokenStream::from_str("=") else { // =
+        return Err(())
+    };
+    let Ok(go_method) = TokenStream::from_str(&(TO_ENTITY_FN.to_owned() + ";")) else { // .go();
+        return Err(())
+    };
+
+    // Construct binding
+    let mut binding = let_token; // let
+    binding.extend(entity_clause.clone()); // let entity_clause
+    binding.extend(eq_token); // let entity_clause =
+    binding.extend(entity_clause.clone()); // let entity_clause = entity_clause
+    binding.extend(go_method); // let entity_clause = entity_clause.go();
+    
+    // Return
+    return Ok(binding)
 }
