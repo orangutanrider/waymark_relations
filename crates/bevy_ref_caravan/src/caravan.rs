@@ -52,4 +52,8 @@ impl Caravan {
     fn next_depth(&self) -> u32 {
         return self.depth + 1
     } 
+
+    fn pack(&mut self, stream: TokenStream) {
+        self.package.extend(stream)
+    }
 } 

@@ -1,8 +1,7 @@
-use single_entity_step::collect_entity_clause;
 use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-use crate::syntax_in::*;
+
 use super::*;
+use crate::*;
 
 pub(super) fn into_nested_entity_step(new_scope: Group, caravan: &mut Caravan, exit_rule: &Vec<TokenTree>) -> Result<Caravan, ()> {
     let iter = new_scope.stream().into_iter();
@@ -24,7 +23,7 @@ fn nested_entity_step(mut caravan: Caravan, macro_wildcard: EntityBindingKind, e
 
     match token {
         // Into nested entity step, then repeat nested entity step.
-        TokenTree::Group(_) => {
+        TokenTree::Group(group) => {
             let mut nested = match into_nested_entity_step(group, &mut caravan, &exit_rule) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),

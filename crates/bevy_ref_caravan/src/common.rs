@@ -133,3 +133,22 @@ fn collect_until_punct_combo_match_fail(
     output.push(TokenTree::Punct(token));
     return collect_until_punct_combo_match_fail(combo_iter, iter, output, previous_spacing);
 }
+
+/// (Input stream, Processed tokens, Found ident)
+pub(crate) fn until_ident(iter: TokenIter) -> (TokenIter, Vec<TokenTree>, Option<Ident>) {
+    return collect_until_ident(iter, Vec::new())
+}
+
+fn collect_until_ident(mut iter: TokenIter, mut collection: Vec<TokenTree>) -> (TokenIter, Vec<TokenTree>, Option<Ident>) {
+    let Some(token) = iter.next() else {
+        return (iter, collection, None) // Ident has not been found, and the entire input has been processed.
+    };
+
+    match token {
+        TokenTree::Ident(ident) => return (iter, collection, Some(ident)),
+        _ => { // Non ident
+            collection.push(token); // Add to collection
+            return collect_until_ident(iter, collection) // And recur.
+        },
+    }
+}

@@ -1,7 +1,7 @@
 /// INPUT FORMAT
 
 /// ?(exit_rule);
-/// entity::query(bindings) ?(exit_rule_override)-> ...;
+/// entity::query(bindings) ?(exit_rule_override)=> ...;
 
 /// INPUT DETAILS
 
@@ -30,4 +30,4 @@ pub(crate) const ENTIY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
 pub(crate) const INPUT_LINE_BREAK: char = ';';
 pub(crate) const EXIT_RULE_NOTATION: char = '?';
 pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = [':', ':']; // ::
-pub(crate) const NEXT_PATTERN_PUNCT: [char; 2] = ['-', '>']; // ->
+pub(crate) const NEXT_PATTERN_PUNCT: [char; 2] = ['=', '>']; // =>
