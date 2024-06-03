@@ -1,17 +1,15 @@
 /// INPUT FORMAT
 
-/// ?(exit_rule);
-/// entity::query(bindings) ?(exit_rule_override)=> ...;
+// ? exit_rule;
+// ?(exit_rule);
 
-/// INPUT DETAILS
+// entity\\query = bindings => ... ;
+// entity\\query = bindings ?exit_rule_override => ... ;
+// (entity\\query) = (bindings) ?(exit_rule_override) => ... ;
+// ((entity)\\(query)) = (bindings) ?(exit_rule_override) => ... ;
 
-/// entity is scopable/repeatable via "{ }" 
-/// query is scopabalbe/repeatable via "{ }"
-
-/// The exit_rule is applied to each pattern following its decleration. New exit rules can be declared to replace it for following patterns.
-/// Optionally, you can overrided it within a pattern aswell. If none, remove "?(exit_rule_override)" and leave "->".
-
-/// Before the entity, you can use a wildcard (e.g. ^, ~, @). These allow you to describe the entity input and control the shadowing of the binding.
+// entity\\{... ;
+// { ... }\\query = bindings => ... ;
 
 use proc_macro::*;
 
@@ -29,5 +27,5 @@ pub(crate) const ENTIY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
 // Symbols
 pub(crate) const INPUT_LINE_BREAK: char = ';';
 pub(crate) const EXIT_RULE_NOTATION: char = '?';
-pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = [':', ':']; // ::
+pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = ['\\', '\\']; // \\
 pub(crate) const NEXT_PATTERN_PUNCT: [char; 2] = ['=', '>']; // =>
