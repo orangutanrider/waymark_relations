@@ -6,7 +6,6 @@ mod next_step;
 
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
-use crate::syntax_out::exit_rule_default;
 
 pub(crate) struct Caravan {
     iter: TokenIter, // Iteration across the input token stream.
@@ -17,14 +16,6 @@ pub(crate) struct Caravan {
 }
 
 impl Caravan {
-    pub(crate) fn start(iter: TokenIter) -> Self {
-        return Self {
-            iter,
-            package: TokenStream::new(),
-            depth: 0,
-        }
-    }
-
     fn new(
         iter: TokenIter, 
         package: TokenStream, 

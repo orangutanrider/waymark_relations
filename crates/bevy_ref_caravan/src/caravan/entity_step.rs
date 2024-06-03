@@ -10,16 +10,16 @@ use proc_macro::*;
 use super::*;
 
 // (Caravan, Exit_rule)
-pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: Vec<TokenTree>) -> Result<(Caravan, Vec<TokenTree>), ()> {
+pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: &TokenStream) -> Result<Caravan, ()> {
     let token = caravan.next();
     let Some(token) = token else {
-        return Ok((caravan, exit_rule)); // Exit.
+        return Ok(caravan); // Exit.
     };
     
     match token {
         // Into nested entity step
         TokenTree::Group(group) => {
-            let mut nested = match into_nested_entity_step(group, &mut caravan, &exit_rule) {
+            let mut nested = match into_nested_entity_step(group, &mut caravan, exit_rule) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -30,8 +30,8 @@ pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: Vec<TokenTre
         },
         // Into single entity step
         TokenTree::Ident(_) => {
-            match single_entity_step(caravan, token, EntityBindingKind::Direct) {
-                Ok(caravan) => return Ok((caravan, exit_rule)),
+            match single_entity_step(caravan, token, EntityBindingKind::Direct, exit_rule) {
+                Ok(caravan) => return Ok(caravan),
                 Err(err) => return Err(err),
             }
         },

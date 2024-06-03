@@ -7,7 +7,7 @@ use syntax_out::*;
 use common::*;
 use super::*;
 
-pub(super) fn single_entity_step(caravan: Caravan, current: TokenTree, wildcard: EntityBindingKind) -> Result<Caravan, ()> {
+pub(super) fn single_entity_step(caravan: Caravan, current: TokenTree, wildcard: EntityBindingKind, exit_rule: &TokenStream) -> Result<Caravan, ()> {
     let result = collect_entity_clause(caravan, current);
     let (mut caravan, mut entity_clause) = match result {
         Ok(ok) => ok,
