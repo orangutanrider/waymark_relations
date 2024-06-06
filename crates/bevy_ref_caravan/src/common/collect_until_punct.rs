@@ -42,6 +42,7 @@ pub(crate) fn collect_until_matching_punct(
     };
 
     if token != punct { // Is match?
+        output.push(TokenTree::Punct(token));
         return collect_until_matching_punct(punct, iter, output); // If not add to output and continue.
     }
 
@@ -99,32 +100,42 @@ pub(crate) fn until_exact_combo(
     }
 
     let combo_iter = punct_combo.iter();
-    let (result, iter, output) = combo_until_fail(combo_iter, iter, output, Spacing::Joint);
+    let (result, iter, output) = match_one_punct_combo(combo_iter, iter, token, output);
     match result {
         PunctMatch::Matching => return (ExactComboFound::WasFound, iter, output), // Exact combo found, exit.
         PunctMatch::NotMatching => return until_exact_combo(punct_combo, iter, output), // Recur.
         PunctMatch::ConnectedMatch => return until_exact_combo(punct_combo, iter, output), // Recur.
     }
 }
-
-/* 
+ 
 /// Iterates across the iter, matching against the combo, until the end of the combo, or a match fail.
 /// Will not continue to iterate after the first combo.
 /// Does not search recursively into groups.
 /// (Result, Input iter, Collected tokens).
 pub(crate) fn match_one_punct_combo(
-    punct_combo: core::slice::Iter<char>,
+    mut punct_combo: core::slice::Iter<char>,
     iter: TokenIter,
+    current: Punct,
+    mut output: Vec<TokenTree>,
 ) -> (PunctMatch, TokenIter, Vec<TokenTree>) {
-    return combo_until_fail(punct_combo, iter, Vec::new(), Spacing::Joint);
+    let Some(combo1) = punct_combo.next() else { // Get combo 1st element.
+        output.push(TokenTree::Punct(current));
+        return (PunctMatch::NotMatching, iter, output); // If not, add to output and terminate.
+    };
+
+    if current != *combo1 { // Is first token matching the combo?
+        output.push(TokenTree::Punct(current));
+        return (PunctMatch::NotMatching, iter, output); // If not, add to output and terminate.
+    }
+
+    return combo_until_fail(punct_combo, iter, output, Spacing::Joint);
 }
-*/
 
 /// Iterates across the iter, matching against the combo, until the end of the combo, or a match fail.
 /// Will not continue to iterate after the first combo.
 /// Does not search recursively into groups.
 /// (Result, Input iter, Collected tokens).
-pub(crate) fn combo_until_fail(
+fn combo_until_fail(
     mut punct_combo: core::slice::Iter<char>,
     mut iter: TokenIter,
     mut output: Vec<TokenTree>,

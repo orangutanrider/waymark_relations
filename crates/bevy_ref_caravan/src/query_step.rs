@@ -1,21 +1,30 @@
-/* 
 mod single_query_step;
+use single_query_step::*;
 
 use proc_macro::*;
-use super::*;
+use proc_macro::token_stream::IntoIter as TokenIter;
 
-pub(crate) query_step_entrance(mut caravan: Caravan, entity_input: TokenStream, exit_rule: &TokenStream) -> Result<Caravan, ()> {
+pub(crate) fn query_step_entrance(
+    mut caravan: TokenIter, 
+    package: TokenStream,
+    exit_rule: &TokenStream,
+    entity_input: TokenStream, 
+) -> Result<(TokenIter, TokenStream), ()> {
     let token = caravan.next();
     let Some(token) = token else {
-        return Ok(caravan);
+        return Ok((caravan, package));
     };
 
+    todo!()
+    //return single_query_step(caravan, token, entity_input);
+
+    /* 
     match token {
         TokenTree::Group(_group) => { 
             todo!()
         },
         TokenTree::Ident(_) => {
-            return single_query_step(caravan, token, entity_input)
+            
         },
         TokenTree::Punct(_) => {
             return single_query_step(caravan, token, entity_input)
@@ -24,5 +33,5 @@ pub(crate) query_step_entrance(mut caravan: Caravan, entity_input: TokenStream, 
             return Err(())
         },
     }
+    */
 }
-*/

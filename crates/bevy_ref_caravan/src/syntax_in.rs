@@ -12,7 +12,11 @@ pub(crate) const EXIT_RULE_DELIMITER: Delimiter = Delimiter::Parenthesis;
 //pub(crate) const ENTIY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
 
 // Symbols
-pub(crate) const INPUT_LINE_BREAK: char = ';';
+pub(crate) const LINE_BREAK: char = ';';
+pub(crate) const NEXT: char = ',';
+pub(crate) const INTO_NEXT: [char; 2] = ['=', '>']; // =>
+
 pub(crate) const EXIT_RULE_NOTATION: char = '?';
+
 pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = ['\\', '\\']; // \\
-pub(crate) const NEXT_PATTERN_PUNCT: [char; 2] = ['=', '>']; // =>
+pub(crate) const QUERY_TO_BINDINGS_PUNCT: char = '=';
