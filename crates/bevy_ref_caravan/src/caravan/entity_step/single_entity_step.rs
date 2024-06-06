@@ -14,6 +14,15 @@ pub(super) fn single_entity_step(caravan: Caravan, current: TokenTree, wildcard:
         Err(err) => return Err(err),
     };
 
+    // Direct
+    let Ok(go_method) = TokenStream::from_str(TO_ENTITY_FN) else {
+        return Err(())
+    };
+    entity_clause.extend(go_method);
+
+    todo!(); // Query step goes here (ignoring nesting for now)
+
+    /* 
     // Into query step.
     match wildcard {
         // Add .go() to entity clause, then move to query step.
@@ -55,6 +64,7 @@ pub(super) fn single_entity_step(caravan: Caravan, current: TokenTree, wildcard:
             todo!()
         },
     }
+    */
 }
 
 /// (Caravan, Entity clause)
@@ -81,6 +91,7 @@ fn collect_until_clause_end(
     }
 }
 
+/* 
 fn create_lifted_clause(entity_clause: TokenIter) -> Result<TokenStream, ()> {
     // Iterate until the first ident is found, apply lift edits to that part of the token stream, reconstruct token stream and return.
 
@@ -158,3 +169,4 @@ fn construct_overlap_binding(entity_clause: Vec<TokenTree>) -> Result<TokenStrea
     // Return
     return Ok(binding)
 }
+*/

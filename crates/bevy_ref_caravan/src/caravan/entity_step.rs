@@ -1,10 +1,10 @@
-mod nested_entity_step;
+//mod nested_entity_step;
 mod single_entity_step;
-mod wildcard_step;
+//mod wildcard_step;
 
-use nested_entity_step::*;
+//use nested_entity_step::*;
 use single_entity_step::*;
-use wildcard_step::*;
+//use wildcard_step::*;
 
 use proc_macro::*;
 use super::*;
@@ -18,7 +18,9 @@ pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: &TokenStream
     
     match token {
         // Into nested entity step
-        TokenTree::Group(group) => {
+        TokenTree::Group(_group) => {
+            todo!();
+            /* 
             let mut nested = match into_nested_entity_step(group, &mut caravan, exit_rule) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
@@ -27,6 +29,7 @@ pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: &TokenStream
             // Repack and continue.
             caravan.repack(nested.unpack());
             return entity_step_entrance(caravan, exit_rule);
+            */
         },
         // Into single entity step
         TokenTree::Ident(_) => {
