@@ -1,4 +1,3 @@
-use std::str::*;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
@@ -13,6 +12,8 @@ pub(crate) enum ExactComboFound {
     WasNeverFound,
 }
 
+/* 
+/// Does not search recursively into groups.
 /// (Result, Input iter, Collected tokens)
 pub(crate) fn until_matching_punct(
     punct: char, 
@@ -20,8 +21,11 @@ pub(crate) fn until_matching_punct(
 ) -> (PunctMatch, TokenIter, Vec<TokenTree>) {
     return collect_until_matching_punct(punct, iter, Vec::new())
 }
+*/
 
-fn collect_until_matching_punct(
+/// Does not search recursively into groups.
+/// (Result, Input iter, Collected tokens)
+pub(crate) fn collect_until_matching_punct(
     punct: char, 
     mut iter: TokenIter,
     mut output: Vec<TokenTree>,
@@ -48,6 +52,7 @@ fn collect_until_matching_punct(
     }
 }
 
+/* 
 /// Iterates until a matching punct combo is found.
 /// Does not count matches that have additional connected symbols.
 /// Does not search recursively into groups.
@@ -58,13 +63,13 @@ pub(crate) fn until_exact_punct_combo(
 ) -> (ExactComboFound, TokenIter, Vec<TokenTree>) {
     return until_exact_combo(punct_combo, iter, Vec::new())
 }
+*/
 
-/// Child of until_exact_punct_combo.
 /// Iterates until a matching punct combo is found.
 /// Does not count matches that have additional connected symbols.
 /// Does not search recursively into groups.
 /// (Result, Input iter, Collected tokens)
-fn until_exact_combo(
+pub(crate) fn until_exact_combo(
     punct_combo: Vec<char>,
     mut iter: TokenIter,
     mut output: Vec<TokenTree>,
@@ -119,7 +124,7 @@ pub(crate) fn match_one_punct_combo(
 /// Will not continue to iterate after the first combo.
 /// Does not search recursively into groups.
 /// (Result, Input iter, Collected tokens).
-fn combo_until_fail(
+pub(crate) fn combo_until_fail(
     mut punct_combo: core::slice::Iter<char>,
     mut iter: TokenIter,
     mut output: Vec<TokenTree>,

@@ -1,20 +1,28 @@
 use std::str::FromStr;
 use proc_macro::*;
+use proc_macro::token_stream::IntoIter as TokenIter;
 
-use crate::*;
-use syntax_in::*;
-use syntax_out::*;
-use common::*;
-use super::*;
+use crate::{
+    syntax_in::*,
+    syntax_out::*,
+    common::collect_until_punct::*,
+};
 
-pub(super) fn single_entity_step(caravan: Caravan, current: TokenTree, wildcard: EntityBindingKind, exit_rule: &TokenStream) -> Result<Caravan, ()> {
+pub(super) fn single_entity_step(
+    caravan: TokenIter, 
+    package: TokenStream,
+    exit_rule: &TokenStream,
+
+    current: TokenTree, 
+    //wildcard: EntityBindingKind, 
+) ->  Result<(TokenIter, TokenStream), ()> {
     let result = collect_entity_clause(caravan, current);
-    let (mut caravan, mut entity_clause) = match result {
+    let (caravan, mut entity_clause) = match result {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
-    // Direct
+    // Direct. Remove when wildcards are added.
     let Ok(go_method) = TokenStream::from_str(TO_ENTITY_FN) else {
         return Err(())
     };
@@ -67,27 +75,23 @@ pub(super) fn single_entity_step(caravan: Caravan, current: TokenTree, wildcard:
     */
 }
 
-/// (Caravan, Entity clause)
 fn collect_entity_clause(
-    caravan: Caravan, 
+    iter: TokenIter, 
     current: TokenTree
-) -> Result<(Caravan, Vec<TokenTree>), ()> {
+) -> Result<(TokenIter, Vec<TokenTree>), ()> {
     let mut entity_clause = Vec::new();
     entity_clause.push(current);
-    return collect_until_clause_end(caravan, entity_clause)
+    return collect_until_clause_end(iter, entity_clause)
 }
 
 fn collect_until_clause_end(
-    caravan: Caravan, 
-    mut collection: Vec<TokenTree>
-) -> Result<(Caravan, Vec<TokenTree>), ()> {
-    match collect_until_punct_combo(ENTITY_TO_QUERY_PUNCT.to_vec(), caravan.iter) {
-        ComboFound::WasFound((iter, mut gathered)) => {
-            let caravan = Caravan::new(iter, caravan.package, caravan.depth);
-            collection.append(&mut gathered);
-            return Ok((caravan, collection))
-        },
-        ComboFound::WasNeverFound(_) => return Err(()),
+    iter: TokenIter, 
+    output: Vec<TokenTree>
+) -> Result<(TokenIter, Vec<TokenTree>), ()> {
+    let (result, iter, output) = until_exact_combo(ENTITY_TO_QUERY_PUNCT.to_vec(), iter, output);
+    match result {
+        ExactComboFound::WasFound => return Ok((iter, output)),
+        ExactComboFound::WasNeverFound => return Err(()),
     }
 }
 

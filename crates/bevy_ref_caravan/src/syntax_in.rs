@@ -1,16 +1,3 @@
-/// INPUT FORMAT
-
-// ? exit_rule;
-// ?(exit_rule);
-
-// entity\\query = bindings => ... ;
-// entity\\query = bindings ?exit_rule_override => ... ;
-// (entity\\query) = (bindings) ?(exit_rule_override) => ... ;
-// ((entity)\\(query)) = (bindings) ?(exit_rule_override) => ... ;
-
-// entity\\{... ;
-// { ... }\\query = bindings => ... ;
-
 use proc_macro::*;
 
 // Entity clause wildcards

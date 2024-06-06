@@ -1,26 +1,34 @@
-//mod nested_entity_step;
 mod single_entity_step;
 //mod wildcard_step;
+//mod nested_entity_step;
 
-//use nested_entity_step::*;
 use single_entity_step::*;
 //use wildcard_step::*;
+//use nested_entity_step::*;
 
 use proc_macro::*;
-use super::*;
+use proc_macro::token_stream::IntoIter as TokenIter;
 
-// (Caravan, Exit_rule)
-pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: &TokenStream) -> Result<Caravan, ()> {
+pub(crate) fn entity_step_entrance(
+    mut caravan: TokenIter, 
+    package: TokenStream,
+    exit_rule: &TokenStream,
+) -> Result<(TokenIter, TokenStream), ()> {
     let token = caravan.next();
     let Some(token) = token else {
-        return Ok(caravan); // Exit.
+        return Ok((caravan, package)); // Exit.
     };
+
+    // To single entity step, remove when additional features are added.
+    match single_entity_step(caravan, package, exit_rule, token) {
+        Ok(caravan) => return Ok(caravan),
+        Err(err) => return Err(err),
+    }
     
+    /* 
     match token {
         // Into nested entity step
-        TokenTree::Group(_group) => {
-            todo!();
-            /* 
+        TokenTree::Group(group) => {
             let mut nested = match into_nested_entity_step(group, &mut caravan, exit_rule) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
@@ -29,7 +37,6 @@ pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: &TokenStream
             // Repack and continue.
             caravan.repack(nested.unpack());
             return entity_step_entrance(caravan, exit_rule);
-            */
         },
         // Into single entity step
         TokenTree::Ident(_) => {
@@ -47,6 +54,7 @@ pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: &TokenStream
             return Err(())
         },
     }
+    */
 }
 
 #[derive(Clone, Copy)]

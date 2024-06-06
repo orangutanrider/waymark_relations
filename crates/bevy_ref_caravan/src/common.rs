@@ -1,4 +1,4 @@
-mod collect_until_punct;
+pub(crate) mod collect_until_punct;
 
 use std::str::*;
 use proc_macro::*;
