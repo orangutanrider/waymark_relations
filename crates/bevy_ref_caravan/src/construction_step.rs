@@ -28,15 +28,16 @@ pub(crate) fn construction_step_entrance(
     };
 
     let bindings_clause = Group::new(Delimiter::Parenthesis, bindings_clause);
-    let bindings_clause = bindings_clause.stream();
+    let bindings_clause = TokenStream::from_str(&bindings_clause.to_string());
+    //let bindings_clause = bindings_clause.stream();
 
     let Ok(eq_token) = TokenStream::from_str("=") else {
         return Err(())
     };
 
     let get_token = match contains_mut {
-        true => "get_mut",
-        false => "get",
+        true => ".get_mut",
+        false => ".get",
     };
 
     let Ok(get_token) = TokenStream::from_str(get_token) else {
@@ -48,14 +49,16 @@ pub(crate) fn construction_step_entrance(
     };
     entity_clause.extend(entity_go);
     let entity_clause = Group::new(Delimiter::Parenthesis, entity_clause);
-    let entity_clause = entity_clause.stream();
+    let entity_clause = TokenStream::from_str(&entity_clause.to_string());
+    //let entity_clause = entity_clause.stream();
 
     let Ok(else_token) = TokenStream::from_str("else") else {
         return Err(())
     };
 
     let exit_rule = Group::new(Delimiter::Brace, exit_rule.clone());
-    let exit_rule = exit_rule.stream();
+    let exit_rule = TokenStream::from_str(&exit_rule.to_string());
+    //let exit_rule = exit_rule.stream();
 
     let Ok(end_token) = TokenStream::from_str(";") else {
         return Err(())
