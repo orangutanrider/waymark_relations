@@ -33,7 +33,7 @@ fn collect_until_ident(mut iter: TokenIter, mut collection: Vec<TokenTree>) -> (
 
 /// Returns true if the the iter contains a "mut" ident. Otherwise, return false.
 /// To find the mut ident, it will search through groups recursively.
-fn contains_mut_recursive(mut iter: TokenIter) -> bool {
+pub(crate) fn contains_mut_recursive(mut iter: core::slice::Iter<TokenTree>) -> bool {
     let token = iter.next();
     let Some(token) = token else {
         return false;
@@ -42,7 +42,7 @@ fn contains_mut_recursive(mut iter: TokenIter) -> bool {
     match token {
         TokenTree::Group(group) => {
             let group = group.stream().into_iter();
-            if contains_mut_recursive(group) {
+            if contains_mut_recursive_stream(group) {
                 return true
             }
             return contains_mut_recursive(iter);
@@ -59,6 +59,36 @@ fn contains_mut_recursive(mut iter: TokenIter) -> bool {
         },
         TokenTree::Literal(_) => {
             return contains_mut_recursive(iter);
+        },
+    }
+}
+
+fn contains_mut_recursive_stream(mut iter: TokenIter) -> bool {
+    let token = iter.next();
+    let Some(token) = token else {
+        return false;
+    };
+
+    match token {
+        TokenTree::Group(group) => {
+            let group = group.stream().into_iter();
+            if contains_mut_recursive_stream(group) {
+                return true
+            }
+            return contains_mut_recursive_stream(iter);
+        },
+        TokenTree::Ident(ident) => {
+            let ident = ident.to_string();
+            if ident == "mut" {
+                return true
+            }
+            return contains_mut_recursive_stream(iter);
+        },
+        TokenTree::Punct(_) => {
+            return contains_mut_recursive_stream(iter);
+        },
+        TokenTree::Literal(_) => {
+            return contains_mut_recursive_stream(iter);
         },
     }
 }

@@ -14,6 +14,7 @@ pub(crate) fn construction_step_entrance(
     query_clause: Vec<TokenTree>,
     bindings_clause: Vec<TokenTree>,
 
+    contains_mut: bool,
     // entity_wildcard:
 ) -> Result<(TokenIter, TokenStream), ()> {
     // To streams
@@ -33,7 +34,12 @@ pub(crate) fn construction_step_entrance(
         return Err(())
     };
 
-    let Ok(get_token) = TokenStream::from_str(".get") else {
+    let get_token = match contains_mut {
+        true => "get_mut",
+        false => "get",
+    };
+
+    let Ok(get_token) = TokenStream::from_str(get_token) else {
         return Err(())
     }; 
 

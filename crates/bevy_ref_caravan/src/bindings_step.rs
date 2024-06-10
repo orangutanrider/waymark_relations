@@ -2,7 +2,10 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::collect_until_punct::*, construction_step::construction_step_entrance, syntax_in::*
+    common::*,
+    common::collect_until_punct::*,
+    construction_step::construction_step_entrance, 
+    syntax_in::*
 };
 
 pub(crate) fn bindings_step_entrance(
@@ -17,8 +20,11 @@ pub(crate) fn bindings_step_entrance(
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
+    
+    let mut_iter = bindings_clause.iter();
+    let contains_mut =  contains_mut_recursive(mut_iter);
 
-    return construction_step_entrance(caravan, package, exit_rule, entity_clause, query_clause, bindings_clause);
+    return construction_step_entrance(caravan, package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut);
 }
 
 fn collect_until_bindings_end(
