@@ -1,21 +1,24 @@
-mod nested_entity_step;
-mod single_entity_step;
-mod wildcard_step;
+mod exit_step;
+//mod wildcard_step;
+//mod nested_entity_step;
 
-use nested_entity_step::*;
-use single_entity_step::*;
-use wildcard_step::*;
+use exit_step::*;
+//use wildcard_step::*;
+//use nested_entity_step::*;
 
 use proc_macro::*;
-use super::*;
+use proc_macro::token_stream::IntoIter as TokenIter;
 
-// (Caravan, Exit_rule)
-pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: &TokenStream) -> Result<Caravan, ()> {
-    let token = caravan.next();
-    let Some(token) = token else {
-        return Ok(caravan); // Exit.
-    };
+pub(crate) fn entity_step_entrance(
+    mut caravan: TokenIter, 
+    package: TokenStream,
+    exit_rule: &TokenStream,
+    current: TokenTree,
+) -> Result<(TokenIter, TokenStream), ()> {
+    // To single entity step, remove when additional features are added.
+    return entity_step_exit(caravan, package, exit_rule, current);
     
+    /* 
     match token {
         // Into nested entity step
         TokenTree::Group(group) => {
@@ -44,6 +47,7 @@ pub(crate) fn entity_step_entrance(mut caravan: Caravan, exit_rule: &TokenStream
             return Err(())
         },
     }
+    */
 }
 
 #[derive(Clone, Copy)]

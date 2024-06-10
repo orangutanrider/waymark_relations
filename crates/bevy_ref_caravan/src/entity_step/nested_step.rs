@@ -1,3 +1,5 @@
+/* 
+
 use proc_macro::*;
 
 use super::*;
@@ -55,3 +57,5 @@ fn nested_entity_step(mut caravan: Caravan, macro_wildcard: EntityBindingKind, e
         },
     }
 }
+
+*/
