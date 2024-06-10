@@ -1,8 +1,8 @@
-mod single_entity_step;
+mod exit_step;
 //mod wildcard_step;
 //mod nested_entity_step;
 
-use single_entity_step::*;
+use exit_step::*;
 //use wildcard_step::*;
 //use nested_entity_step::*;
 
@@ -13,17 +13,10 @@ pub(crate) fn entity_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
+    current: TokenTree,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let token = caravan.next();
-    let Some(token) = token else {
-        return Ok((caravan, package)); // Exit.
-    };
-
     // To single entity step, remove when additional features are added.
-    match single_entity_step(caravan, package, exit_rule, token) {
-        Ok(caravan) => return Ok(caravan),
-        Err(err) => return Err(err),
-    }
+    return entity_step_exit(caravan, package, exit_rule, current);
     
     /* 
     match token {

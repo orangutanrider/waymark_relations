@@ -2,16 +2,15 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::collect_until_punct::*,
-    syntax_in::*,
+    bindings_step::bindings_step_entrance, common::collect_until_punct::*, syntax_in::*
 };
 
-pub(super) fn single_query_step(
+pub(super) fn query_step_exit(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
 
-    entity_clause: TokenStream, 
+    entity_clause: Vec<TokenTree>, 
     current: TokenTree, 
 ) -> Result<(TokenIter, TokenStream), ()> {
     let (caravan, query_clause) = match collect_query_clause(caravan, current) {
@@ -19,7 +18,7 @@ pub(super) fn single_query_step(
         Err(err) => return Err(err),
     };
 
-    todo!() // To bindings step   
+    return bindings_step_entrance(caravan, package, exit_rule, entity_clause, query_clause) 
 }
 
 fn collect_query_clause(

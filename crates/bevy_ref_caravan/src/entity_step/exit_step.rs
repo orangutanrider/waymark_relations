@@ -3,32 +3,27 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    syntax_in::*,
-    syntax_out::*,
-    common::collect_until_punct::*,
+    common::collect_until_punct::*, 
+    query_step::query_step_entrance, 
+    syntax_in::*, 
+    syntax_out::*
 };
 
-pub(super) fn single_entity_step(
+pub(super) fn entity_step_exit(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
 
     current: TokenTree, 
     //wildcard: EntityBindingKind, 
-) ->  Result<(TokenIter, TokenStream), ()> {
+) -> Result<(TokenIter, TokenStream), ()> {
     let result = collect_entity_clause(caravan, current);
     let (caravan, mut entity_clause) = match result {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
-    // Direct. Remove when wildcards are added.
-    let Ok(go_method) = TokenStream::from_str(TO_ENTITY_FN) else {
-        return Err(())
-    };
-    entity_clause.extend(go_method);
-
-    todo!(); // Query step goes here (ignoring nesting for now)
+    return query_step_entrance(caravan, package, exit_rule, entity_clause);
 
     /* 
     // Into query step.
