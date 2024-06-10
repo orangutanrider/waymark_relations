@@ -27,7 +27,7 @@ fn to_oranges_sys(
     mut dest_q: Query<&mut Oranges>,
 ) {
     for to_oranges in origin_q.iter() {
-        ref_caravan!(to_oranges \\ dest_q = mut oranges;);
+        ref_caravan!(to_oranges :: dest_q = mut oranges;);
 
     }
 }

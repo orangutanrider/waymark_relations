@@ -18,5 +18,5 @@ pub(crate) const INTO_NEXT: [char; 2] = ['=', '>']; // =>
 
 pub(crate) const EXIT_RULE_NOTATION: char = '?';
 
-pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = ['\\', '\\']; // \\
+pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = [':', ':']; // \\
 pub(crate) const QUERY_TO_BINDINGS_PUNCT: char = '=';
