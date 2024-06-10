@@ -32,6 +32,6 @@ fn collect_query_clause(
     match result {
         PunctMatch::Matching => return Ok((iter, output)),
         PunctMatch::NotMatching => return Err(()),
-        PunctMatch::ConnectedMatch => return Err(()),
+        // PunctMatch::ConnectedMatch => return Err(()),
     }
 }

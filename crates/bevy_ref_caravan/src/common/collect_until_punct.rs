@@ -4,7 +4,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 pub(crate) enum PunctMatch{
     Matching,
     NotMatching,
-    ConnectedMatch,
+    //ConnectedMatch,
 }
 
 pub(crate) enum ExactComboFound {
@@ -45,12 +45,14 @@ pub(crate) fn collect_until_matching_punct(
         output.push(TokenTree::Punct(token));
         return collect_until_matching_punct(punct, iter, output); // If not add to output and continue.
     }
+    
+    return (PunctMatch::Matching, iter, output);
 
-    // Is connected match?
-    match token.spacing() {
-        Spacing::Joint => return (PunctMatch::ConnectedMatch, iter, output),
-        Spacing::Alone => return (PunctMatch::Matching, iter, output),
-    }
+    // // Is connected match?
+    // match token.spacing() {
+    //     Spacing::Joint => return (PunctMatch::ConnectedMatch, iter, output),
+    //     Spacing::Alone => return (PunctMatch::Matching, iter, output),
+    // }
 }
 
 /* 
@@ -91,20 +93,20 @@ pub(crate) fn until_exact_combo(
         return until_exact_combo(punct_combo, iter, output); // If not add to output and continue.
     };
 
-    match token.spacing() { // Is apart of a punct combo?
-        Spacing::Joint => {/* Proceed */},
-        Spacing::Alone => {
-            output.push(TokenTree::Punct(token));
-            return until_exact_combo(punct_combo, iter, output); // If not add to output and continue.
-        },
-    }
+    //match token.spacing() { // Is apart of a punct combo?
+    //    Spacing::Joint => {/* Proceed */},
+    //    Spacing::Alone => {
+    //        output.push(TokenTree::Punct(token));
+    //        return until_exact_combo(punct_combo, iter, output); // If not add to output and continue.
+    //    },
+    //}
 
     let combo_iter = punct_combo.iter();
     let (result, iter, output) = match_one_punct_combo(combo_iter, iter, token, output);
     match result {
         PunctMatch::Matching => return (ExactComboFound::WasFound, iter, output), // Exact combo found, exit.
         PunctMatch::NotMatching => return until_exact_combo(punct_combo, iter, output), // Recur.
-        PunctMatch::ConnectedMatch => return until_exact_combo(punct_combo, iter, output), // Recur.
+        //PunctMatch::ConnectedMatch => return until_exact_combo(punct_combo, iter, output), // Recur.
     }
 }
  
@@ -128,7 +130,7 @@ pub(crate) fn match_one_punct_combo(
         return (PunctMatch::NotMatching, iter, output); // If not, add to output and terminate.
     }
 
-    return combo_until_fail(punct_combo, iter, output, Spacing::Joint);
+    return combo_until_fail(punct_combo, iter, output);
 }
 
 /// Iterates across the iter, matching against the combo, until the end of the combo, or a match fail.
@@ -139,20 +141,10 @@ fn combo_until_fail(
     mut punct_combo: core::slice::Iter<char>,
     mut iter: TokenIter,
     mut output: Vec<TokenTree>,
-    previous_spacing: Spacing,
 ) -> (PunctMatch, TokenIter, Vec<TokenTree>) {
     let Some(combo) = punct_combo.next() else { 
-        // If none, then a potential match has been found. However, it checks to see if there are following connected puncts, as this may not be desired.
-        match previous_spacing {
-            Spacing::Joint => return (PunctMatch::ConnectedMatch, iter, output),
-            Spacing::Alone => return (PunctMatch::Matching, iter, output),
-        }
+        return (PunctMatch::NotMatching, iter, output) // Potentially, the combo is a connected match, but this function doesn't detect for that, and treats them as invalid.
     };
-
-    match previous_spacing {
-        Spacing::Joint => {/* Proceed */},
-        Spacing::Alone => return (PunctMatch::NotMatching, iter, output), // Spacing has been broken in the previous iteration, and the combo has not been found.
-    }
 
     let Some(token) = iter.next() else {
         return (PunctMatch::NotMatching, iter, output) // End of input iter reached, and a match has not been found.
@@ -171,13 +163,17 @@ fn combo_until_fail(
     match token.spacing() {
         Spacing::Joint => {/* Proceed */},
         Spacing::Alone => {
-            // It might be the end of the combo, so recur to check that.
+            if punct_combo.len() == 0 { // Is at end of combo? If is an alone token and at end of combo, then it is valid.
+                return (PunctMatch::Matching, iter, output) // Combo success
+            }
+
+            // If alone and not end of combo, combo fail.
             output.push(TokenTree::Punct(token));
-            return combo_until_fail(punct_combo, iter, output, Spacing::Alone)
+            return (PunctMatch::NotMatching, iter, output)
         },
     }
 
     // Recur.
     output.push(TokenTree::Punct(token));
-    return combo_until_fail(punct_combo, iter, output, previous_spacing);
+    return combo_until_fail(punct_combo, iter, output);
 }
