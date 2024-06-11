@@ -5,6 +5,8 @@ mod nested_step; use nested_step::*;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
+use crate::syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER;
+
 pub(crate) fn entity_step_entrance(
     caravan: TokenIter, 
     package: TokenStream,
@@ -16,16 +18,21 @@ pub(crate) fn entity_step_entrance(
     match current {
         // Into nested entity step
         TokenTree::Group(group) => {
-            todo!()
+            if group.delimiter() != ENTIY_STEP_SCOPABLE_DELIMITER {
+                return Err(())
+            }
+
+            let mut nested_caravan = group.stream().into_iter();
+            let Some(current) = nested_caravan.next() else {
+                return Err(())
+            };
+
+            let (_, package) = match entity_step_entrance(nested_caravan, package, exit_rule, true, current) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
             
-            // let mut nested = match into_nested_entity_step(group, &mut caravan, exit_rule) {
-            //     Ok(ok) => ok,
-            //     Err(err) => return Err(err),
-            // };
-            //
-            // // Repack and continue.
-            // caravan.repack(nested.unpack());
-            // return entity_step_entrance(caravan, exit_rule);
+            return post_nesting_entity_step_exit(caravan, package, is_nested)
         },
         // Into single entity step
         TokenTree::Ident(_) => {

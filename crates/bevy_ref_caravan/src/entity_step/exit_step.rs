@@ -19,7 +19,7 @@ pub(super) fn entity_step_exit(
     //wildcard: EntityBindingKind, 
 ) -> Result<(TokenIter, TokenStream), ()> {
     let result = collect_entity_clause(caravan, current);
-    let (caravan, mut entity_clause) = match result {
+    let (caravan, entity_clause) = match result {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };

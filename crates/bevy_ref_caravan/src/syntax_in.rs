@@ -8,8 +8,7 @@ use proc_macro::*;
 // Delimiters
 pub(crate) const BINDINGS_DELIMITER: Delimiter = Delimiter::Parenthesis;
 pub(crate) const EXIT_RULE_DELIMITER: Delimiter = Delimiter::Parenthesis;
-//pub(crate) const QUERY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
-//pub(crate) const ENTIY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
+pub(crate) const ENTIY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
 
 // Symbols
 pub(crate) const LINE_BREAK: char = ';';
