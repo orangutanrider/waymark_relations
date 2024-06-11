@@ -2,10 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::*,
-    common::collect_until_punct::*,
-    construction_step::construction_step, 
-    syntax_in::*
+    common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::entity_step_entrance, syntax_in::*
 };
 
 pub(crate) fn bindings_step(
@@ -17,15 +14,37 @@ pub(crate) fn bindings_step(
     entity_clause:  Vec<TokenTree>, 
     query_clause:  Vec<TokenTree>,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let (caravan, bindings_clause) = match collect_until_bindings_end(caravan, Vec::new(), is_nested) {
+    let (mut caravan, bindings_clause) = match collect_until_bindings_end(caravan, Vec::new(), is_nested) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
     
     let mut_iter = bindings_clause.iter();
-    let contains_mut =  contains_mut_recursive(mut_iter);
+    let contains_mut = contains_mut_recursive(mut_iter);
 
-    return construction_step(caravan, package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut);
+    match is_nested {
+        true => {
+            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            let Some(current) = caravan.next() else {
+                return Ok((caravan, package))
+            };
+
+            return entity_step_entrance(caravan, package, exit_rule, true, current)
+        },
+        false => { 
+            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            return Ok((caravan, package))
+        },
+    }
+
 }
 
 fn collect_until_bindings_end(

@@ -25,50 +25,6 @@ pub(super) fn entity_step_exit(
     };
 
     return query_step(caravan, package, exit_rule, is_nested, entity_clause);
-
-    /* 
-    // Into query step.
-    match wildcard {
-        // Add .go() to entity clause, then move to query step.
-        EntityBindingKind::Direct => {
-            let Ok(go_method) = TokenStream::from_str(TO_ENTITY_FN) else {
-                return Err(())
-            };
-            entity_clause.extend(go_method);
-            todo!()
-        },
-        // Construct lifted binding, add to package, then move to query step.
-        EntityBindingKind::Lifted => {
-            let entity_clause_iter = TokenStream::from_iter(entity_clause.clone().into_iter()).into_iter(); // Structure conversions...
-            let lifted_clause = match create_lifted_clause(entity_clause_iter) { // Create lifted entity clause.
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            let binding = match construct_lifted_binding(lifted_clause, &entity_clause) { // Construct binding (let lifted_clause = entity_clause.go();)
-                Ok(ok) => ok,
-                Err(err) => return Err(err), 
-            };
-
-            caravan.pack(binding); // Add binding to caravan package.
-            todo!()
-        },
-        // Construct overlap binding, add to package, then move to query step.
-        EntityBindingKind::Overlap => {
-            let binding = match construct_overlap_binding(entity_clause) { // Construct binding (let entity_clause = entity_clause.go();)
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            caravan.pack(binding); // Add binding to caravan package.
-            todo!()
-        },
-        // Can immediately enter query step.
-        EntityBindingKind::Literal => {
-            todo!()
-        },
-    }
-    */
 }
 
 fn collect_entity_clause(

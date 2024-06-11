@@ -22,17 +22,13 @@ pub(crate) fn entity_step_entrance(
                 return Err(())
             }
 
-            let mut nested_caravan = group.stream().into_iter();
-            let Some(current) = nested_caravan.next() else {
-                return Err(())
-            };
-
-            let (_, package) = match entity_step_entrance(nested_caravan, package, exit_rule, true, current) {
+            let nested_caravan: TokenIter = group.stream().into_iter();
+            let (_, package) = match nested_entity_step_entrance(nested_caravan, package, exit_rule) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
-            
-            return post_nesting_entity_step_exit(caravan, package, is_nested)
+
+            return nested_entity_step_exit(caravan, package, exit_rule, is_nested);
         },
         // Into single entity step
         TokenTree::Ident(_) => {

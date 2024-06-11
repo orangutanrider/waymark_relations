@@ -61,7 +61,7 @@ fn nested_caravan_sys(
         ref_caravan!(
             to_hub :: hub_q = (to_oranges, to_apples) => {
                 to_oranges :: oranges_q = oranges,
-                apples_q :: apples_q = apples,
+                to_apples :: apples_q = apples,
             }
         ); 
         assert!(oranges.0 == 2);

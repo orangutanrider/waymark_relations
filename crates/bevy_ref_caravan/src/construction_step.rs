@@ -6,17 +6,14 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 use crate::syntax_out::TO_ENTITY_FN;
 
 pub(crate) fn construction_step(
-    caravan: TokenIter, 
     mut package: TokenStream,
     exit_rule: &TokenStream,
 
     entity_clause: Vec<TokenTree>,
     query_clause: Vec<TokenTree>,
     bindings_clause: Vec<TokenTree>,
-
     contains_mut: bool,
-    // entity_wildcard:
-) -> Result<(TokenIter, TokenStream), ()> {
+) -> Result<TokenStream, ()> {
     // To streams
     let mut entity_clause = TokenStream::from_iter(entity_clause.into_iter());
     let query_clause = TokenStream::from_iter(query_clause.into_iter());
@@ -79,5 +76,5 @@ pub(crate) fn construction_step(
     // Add to package
     package.extend(assembly);
 
-    return Ok((caravan, package));
+    return Ok(package);
 }
