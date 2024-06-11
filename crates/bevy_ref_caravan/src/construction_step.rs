@@ -5,7 +5,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::syntax_out::TO_ENTITY_FN;
 
-pub(crate) fn construction_step_entrance(
+pub(crate) fn construction_step(
     caravan: TokenIter, 
     mut package: TokenStream,
     exit_rule: &TokenStream,

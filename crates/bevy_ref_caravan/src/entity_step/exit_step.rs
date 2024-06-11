@@ -4,7 +4,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
     common::collect_until_punct::*, 
-    query_step::query_step_entrance, 
+    query_step::query_step, 
     syntax_in::*, 
     syntax_out::*
 };
@@ -13,6 +13,7 @@ pub(super) fn entity_step_exit(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
+    is_nested: bool,
 
     current: TokenTree, 
     //wildcard: EntityBindingKind, 
@@ -23,7 +24,7 @@ pub(super) fn entity_step_exit(
         Err(err) => return Err(err),
     };
 
-    return query_step_entrance(caravan, package, exit_rule, entity_clause);
+    return query_step(caravan, package, exit_rule, is_nested, entity_clause);
 
     /* 
     // Into query step.
