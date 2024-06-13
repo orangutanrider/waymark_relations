@@ -1,42 +1,45 @@
-mod exit_step;
-//mod wildcard_step;
-//mod nested_entity_step;
-
-use exit_step::*;
-//use wildcard_step::*;
-//use nested_entity_step::*;
+mod exit_step; use exit_step::*;
+//mod wildcard_step; use wildcard_step::*;
+mod nested_step; use nested_step::*;
 
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
+use crate::bindings_step::IntoNext;
+use crate::syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER;
+
 pub(crate) fn entity_step_entrance(
-    mut caravan: TokenIter, 
+    caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
+    is_nested: bool,
+
+    into_next: IntoNext, // If this step was proceeded by an INTO_NEXT combo, then nesting is allowed.
     current: TokenTree,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    // To single entity step, remove when additional features are added.
-    return entity_step_exit(caravan, package, exit_rule, current);
-    
-    /* 
-    match token {
+    match current {
         // Into nested entity step
         TokenTree::Group(group) => {
-            let mut nested = match into_nested_entity_step(group, &mut caravan, exit_rule) {
+            match into_next {
+                IntoNext::IntoNext => { /* Proceed */ },
+                IntoNext::Escape => return Err(()),
+            }
+
+            if group.delimiter() != ENTIY_STEP_SCOPABLE_DELIMITER {
+                return Err(())
+            }
+
+            let nested_caravan: TokenIter = group.stream().into_iter();
+            let (_, package) = match nested_entity_step_entrance(nested_caravan, package, exit_rule) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
 
-            // Repack and continue.
-            caravan.repack(nested.unpack());
-            return entity_step_entrance(caravan, exit_rule);
+            return nested_entity_step_exit(caravan, package, exit_rule, is_nested);
         },
         // Into single entity step
         TokenTree::Ident(_) => {
-            match single_entity_step(caravan, token, EntityBindingKind::Direct, exit_rule) {
-                Ok(caravan) => return Ok(caravan),
-                Err(err) => return Err(err),
-            }
+            return entity_step_exit(caravan, package, exit_rule, is_nested, current);
         },
         // Into wildcard step, entity step following.
         TokenTree::Punct(_) => {
@@ -47,9 +50,9 @@ pub(crate) fn entity_step_entrance(
             return Err(())
         },
     }
-    */
 }
 
+/* 
 #[derive(Clone, Copy)]
 /// Matched to entity wildcard symbols.
 enum EntityBindingKind {
@@ -69,3 +72,4 @@ enum EntityBindingKind {
     /// A literal entity binding.
     Literal,
 }
+*/

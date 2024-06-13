@@ -4,7 +4,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
     common::collect_until_punct::*, 
-    query_step::query_step_entrance, 
+    query_step::query_step, 
     syntax_in::*, 
     syntax_out::*
 };
@@ -13,61 +13,18 @@ pub(super) fn entity_step_exit(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
+    is_nested: bool,
 
     current: TokenTree, 
     //wildcard: EntityBindingKind, 
 ) -> Result<(TokenIter, TokenStream), ()> {
     let result = collect_entity_clause(caravan, current);
-    let (caravan, mut entity_clause) = match result {
+    let (caravan, entity_clause) = match result {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
-    return query_step_entrance(caravan, package, exit_rule, entity_clause);
-
-    /* 
-    // Into query step.
-    match wildcard {
-        // Add .go() to entity clause, then move to query step.
-        EntityBindingKind::Direct => {
-            let Ok(go_method) = TokenStream::from_str(TO_ENTITY_FN) else {
-                return Err(())
-            };
-            entity_clause.extend(go_method);
-            todo!()
-        },
-        // Construct lifted binding, add to package, then move to query step.
-        EntityBindingKind::Lifted => {
-            let entity_clause_iter = TokenStream::from_iter(entity_clause.clone().into_iter()).into_iter(); // Structure conversions...
-            let lifted_clause = match create_lifted_clause(entity_clause_iter) { // Create lifted entity clause.
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            let binding = match construct_lifted_binding(lifted_clause, &entity_clause) { // Construct binding (let lifted_clause = entity_clause.go();)
-                Ok(ok) => ok,
-                Err(err) => return Err(err), 
-            };
-
-            caravan.pack(binding); // Add binding to caravan package.
-            todo!()
-        },
-        // Construct overlap binding, add to package, then move to query step.
-        EntityBindingKind::Overlap => {
-            let binding = match construct_overlap_binding(entity_clause) { // Construct binding (let entity_clause = entity_clause.go();)
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            caravan.pack(binding); // Add binding to caravan package.
-            todo!()
-        },
-        // Can immediately enter query step.
-        EntityBindingKind::Literal => {
-            todo!()
-        },
-    }
-    */
+    return query_step(caravan, package, exit_rule, is_nested, entity_clause);
 }
 
 fn collect_entity_clause(

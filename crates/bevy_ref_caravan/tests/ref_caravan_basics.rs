@@ -18,7 +18,6 @@ struct Oranges(u32);
 #[derive(ScheduleLabel, Clone, Debug, PartialEq, Eq, Hash)]
 struct TestSchedule;
 
-
 #[test]
 fn default_exit_rule_caravan() {
     let mut world =  World::new();
@@ -39,7 +38,7 @@ fn assert_no_iters_sys(
     dest_q: Query<&Oranges>, // Will result in nothing
 ) {
     for to_oranges in origin_q.iter() {
-        ref_caravan!(to_oranges :: dest_q = oranges); // No line-break ';' in the caravan 
+        ref_caravan!(to_oranges :: dest_q = oranges); 
         panic!();
     }
 }
