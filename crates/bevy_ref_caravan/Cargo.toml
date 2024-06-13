@@ -14,3 +14,4 @@ proc-macro = true
 
 [dev-dependencies]
 bevy_ecs = { version = "0.13.2" }
+trybuild = { version = "1.0.96" }
