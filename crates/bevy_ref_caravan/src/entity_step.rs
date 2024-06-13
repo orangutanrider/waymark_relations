@@ -5,6 +5,7 @@ mod nested_step; use nested_step::*;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
+use crate::bindings_step::IntoNext;
 use crate::syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER;
 
 pub(crate) fn entity_step_entrance(
@@ -13,11 +14,17 @@ pub(crate) fn entity_step_entrance(
     exit_rule: &TokenStream,
     is_nested: bool,
 
+    into_next: IntoNext, // If this step was proceeded by an INTO_NEXT combo, then nesting is allowed.
     current: TokenTree,
 ) -> Result<(TokenIter, TokenStream), ()> {
     match current {
         // Into nested entity step
         TokenTree::Group(group) => {
+            match into_next {
+                IntoNext::IntoNext => { /* Proceed */ },
+                IntoNext::Escape => return Err(()),
+            }
+
             if group.delimiter() != ENTIY_STEP_SCOPABLE_DELIMITER {
                 return Err(())
             }
