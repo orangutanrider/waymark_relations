@@ -12,12 +12,17 @@ pub(crate) fn entity_step_entrance(
     package: TokenStream,
     exit_rule: &TokenStream,
     is_nested: bool,
+    was_into_next: bool, // Was the previous step's exit symbol a INTO_NEXT combo (e.g. =>) (the step can only be nested when this is the case.)
 
     current: TokenTree,
 ) -> Result<(TokenIter, TokenStream), ()> {
     match current {
         // Into nested entity step
         TokenTree::Group(group) => {
+            if !was_into_next {
+                return Err(())
+            }
+
             if group.delimiter() != ENTIY_STEP_SCOPABLE_DELIMITER {
                 return Err(())
             }

@@ -157,3 +157,78 @@ fn comma_into_scope_sys(
         assert!(onions.0 == 4);
     }
 }
+
+#[test]
+fn immediate_nest() { // Only => is meant to be valid for going into a new scope.
+    let mut world =  World::new();
+    
+    // Create entities + components
+    let oranges = world.spawn(Oranges(2)).id(); 
+    let apples = world.spawn(Apples(3)).id(); 
+    let hub = world.spawn((ToApples(apples), ToOranges(oranges))).id();
+    world.spawn(ToHub(hub)); // Origin
+
+    // Create system
+    let mut schedule = Schedule::new(TestSchedule);
+    schedule.add_systems(immediate_nest_sys); // Assertion system
+    schedule.initialize(&mut world).unwrap();
+    schedule.run(&mut world); // Run system
+}
+
+fn immediate_nest_sys(
+    origin_q: Query<&ToHub>,
+    hub_q: Query<(&ToOranges, &ToApples)>,
+    oranges_q: Query<&Oranges>,
+    apples_q: Query<&Apples>,
+) {
+    for to_hub in origin_q.iter() {
+        ref_caravan!(   {
+                to_hub :: hub_q = (to_oranges, to_apples) => {
+                    to_oranges :: oranges_q = oranges,
+                    to_apples :: apples_q = apples,
+                }
+            }
+        ); 
+        assert!(oranges.0 == 2);
+        assert!(apples.0 == 3);
+    }
+}
+
+#[test]
+fn diamond_caravan() {
+    let mut world =  World::new();
+    
+    // Create entities + components
+    let oranges = world.spawn(Oranges(2)).id(); 
+    let apples = world.spawn(Apples(3)).id(); 
+    let onions = world.spawn(Onions(4)).id();
+    let carrots = world.spawn(ToOnions(onions)).id();
+    let hub = world.spawn((ToApples(apples), ToOranges(oranges), ToCarrots(carrots))).id();
+    world.spawn(ToHub(hub)); // Origin
+
+    // Create system
+    let mut schedule = Schedule::new(TestSchedule);
+    schedule.add_systems(diamond_caravan_sys); // Assertion system
+    schedule.initialize(&mut world).unwrap();
+    schedule.run(&mut world); // Run system
+}
+
+fn diamond_caravan_sys(
+    origin_q: Query<&ToHub>,
+    hub_q: Query<(&ToOranges, &ToApples)>,
+    oranges_q: Query<&Oranges>,
+    apples_q: Query<&Apples>,
+) {
+    for to_hub in origin_q.iter() {
+        ref_caravan!(
+            to_hub :: hub_q = (to_oranges, to_apples, to_carrots) => {
+                to_oranges :: oranges_q = oranges,
+                to_apples :: apples_q = apples,
+                to_carrots :: carrots_q = to_onions,
+            } => to_onions :: onions_q = onions;
+        ); 
+        assert!(oranges.0 == 2);
+        assert!(apples.0 == 3);
+        assert!(onions.0 == 4);
+    }
+}

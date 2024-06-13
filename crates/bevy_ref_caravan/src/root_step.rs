@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
@@ -14,7 +16,7 @@ pub(crate) fn root_step(
 
     // add check for exit rule
 
-    let (caravan, package) = match entity_step_entrance(caravan, package, &exit_rule, false, token) {
+    let (caravan, package) = match entity_step_entrance(caravan, package, &exit_rule, false, false, token) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
