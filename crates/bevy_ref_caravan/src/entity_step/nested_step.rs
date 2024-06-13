@@ -14,7 +14,7 @@ pub(super) fn nested_entity_step_entrance(
         return Ok((caravan, package)) // End of iterator
     };
 
-    return entity_step_entrance(caravan, package, exit_rule, true, false, token)
+    return entity_step_entrance(caravan, package, exit_rule, true, token)
 }
 
 

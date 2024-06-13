@@ -5,13 +5,6 @@ use crate::{
     common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::entity_step_entrance, syntax_in::*
 };
 
-enum ContinueToken {
-    LineBreak,
-    Next,
-    IntoNext,
-    Empty,
-}
-
 pub(crate) fn bindings_step(
     caravan: TokenIter, 
     package: TokenStream,
@@ -21,7 +14,7 @@ pub(crate) fn bindings_step(
     entity_clause:  Vec<TokenTree>, 
     query_clause:  Vec<TokenTree>,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let (mut caravan, bindings_clause, continue_token) = match collect_until_bindings_end(caravan, Vec::new(), is_nested) {
+    let (mut caravan, bindings_clause) = match collect_until_bindings_end(caravan, Vec::new(), is_nested) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
@@ -40,10 +33,7 @@ pub(crate) fn bindings_step(
                 return Ok((caravan, package))
             };
 
-            match continue_token {
-                ContinueToken::IntoNext => return entity_step_entrance(caravan, package, exit_rule, true, true, current),
-                _ => return entity_step_entrance(caravan, package, exit_rule, true, true, current),
-            }
+            return entity_step_entrance(caravan, package, exit_rule, true, current)
         },
         false => { 
             let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
@@ -61,10 +51,10 @@ fn collect_until_bindings_end(
     mut caravan: TokenIter, 
     mut output: Vec<TokenTree>,
     is_nested: bool,
-) -> Result<(TokenIter, Vec<TokenTree>, ContinueToken), ()> {
+) -> Result<(TokenIter, Vec<TokenTree>), ()> {
     let token = caravan.next();
     let Some(token) = token else { // Expect to be un-nested or else throw an error.
-        return Ok((caravan, output, ContinueToken::Empty))
+        return Ok((caravan, output))
     };
 
     let TokenTree::Punct(token) = token else { // Is Punct?
@@ -76,12 +66,12 @@ fn collect_until_bindings_end(
     match is_nested {
         true => {
             if token == NEXT { // For nested the NEXT symbol is valid.
-                return Ok((caravan, output, ContinueToken::Next))
+                return Ok((caravan, output))
             }
         },
         false => {
             if token == LINE_BREAK { // For un-nested the LINE_BREAK symbol is valid.
-                return Ok((caravan, output, ContinueToken::LineBreak))
+                return Ok((caravan, output))
             }
         },
     }
@@ -96,9 +86,9 @@ fn collect_until_bindings_end(
     }
 
     // Is INTO_NEXT punct combo?
-    let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
+    let (results, caravan, mut output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
     match results {
-        PunctMatch::Matching => return Ok((caravan, output, ContinueToken::IntoNext)),
+        PunctMatch::Matching => return Ok((caravan, output)),
         _ => {
             return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
         },
