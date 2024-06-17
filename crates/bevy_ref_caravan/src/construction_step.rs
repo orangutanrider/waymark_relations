@@ -98,11 +98,17 @@ pub(crate) fn construction_step(
             (Some(entity_binding), entity_clause)
         },
         EntityWildcard::Lifted => {
-            let Ok(entity_binding) = create_lifted_entity_binding(entity_clause.clone()) else {
+            // Created lifted clause
+            let lifted_clause = match create_lifted_entity_clause(entity_clause.clone()) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            let Ok(entity_binding) = create_lifted_entity_binding(lifted_clause.clone(), entity_clause) else {
                 return Err(())
             };
 
-            (Some(entity_binding), entity_clause)
+            (Some(entity_binding), lifted_clause)
         },
     };
 
@@ -169,6 +175,7 @@ fn create_overlap_entity_binding(
 }
 
 fn create_lifted_entity_binding(
+    lifted_clause: TokenStream,
     entity_clause: TokenStream,
 ) -> Result<TokenStream, ()> {
     // Create tokens
@@ -190,16 +197,10 @@ fn create_lifted_entity_binding(
         return Err(())
     };
 
-    // Created lifted clause
-    let entity_clause = match create_lifted_entity_clause(entity_clause) {
-        Ok(ok) => ok,
-        Err(err) => return Err(err),
-    };
-
     // Assemble tokens
     let mut assembly = TokenStream::new();
     assembly.extend(let_token);
-    assembly.extend(entity_clause);
+    assembly.extend(lifted_clause);
     assembly.extend(eq_token);
     assembly.extend(entity_data);
     assembly.extend(end_token);
