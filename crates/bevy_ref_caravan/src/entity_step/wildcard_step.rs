@@ -1,31 +1,15 @@
 use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
 use crate::syntax_in::{DIRECT, LITERAL, DE_REF_LITERAL, OVERLAP, LIFT};
-
-enum EntityWildcard {
-    Direct,
-    Literal,
-    DeRefLiteral,
-    Overlap,
-    Lifted,
-}
+use super::*;
 
 pub(super) fn wildcard_step(
-    caravan: TokenIter, 
-    package: TokenStream,
-    exit_rule: &TokenStream,
-    is_nested: bool,
-
     current: Punct, 
-) -> Result<(TokenIter, TokenStream), ()> {
-    let Some(kind) = punct_to_wildcard(&current) else {
-        return Err(())
-    };
+) -> Result<EntityWildcard, ()> {
+    match punct_to_wildcard(&current) {
+        Some(kind) => return Ok(kind),
+        None => return Err(()),
+    }
 
-    
-
-    todo!()
 }
 
 fn punct_to_wildcard(

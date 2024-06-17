@@ -3,17 +3,23 @@ use std::str::FromStr;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
-use crate::syntax_out::TO_ENTITY_FN;
+use crate::{
+    syntax_out::TO_ENTITY_FN,
+    entity_step::EntityWildcard,
+};
 
 pub(crate) fn construction_step(
     mut package: TokenStream,
     exit_rule: &TokenStream,
 
-    entity_clause: Vec<TokenTree>,
+    entity_clause: (EntityWildcard, Vec<TokenTree>),
     query_clause: Vec<TokenTree>,
     bindings_clause: Vec<TokenTree>,
     contains_mut: bool,
 ) -> Result<TokenStream, ()> {
+    // Unwrap entity clause
+    let (wildcard, entity_clause) = entity_clause;
+
     // To streams
     let mut entity_clause = TokenStream::from_iter(entity_clause.into_iter());
     let query_clause = TokenStream::from_iter(query_clause.into_iter());

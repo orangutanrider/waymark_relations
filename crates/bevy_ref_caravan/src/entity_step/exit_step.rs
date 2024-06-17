@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
@@ -6,8 +5,9 @@ use crate::{
     common::collect_until_punct::*, 
     query_step::query_step, 
     syntax_in::*, 
-    syntax_out::*
 };
+
+use super::EntityWildcard;
 
 pub(super) fn entity_step_exit(
     caravan: TokenIter, 
@@ -16,7 +16,7 @@ pub(super) fn entity_step_exit(
     is_nested: bool,
 
     current: TokenTree, 
-    //wildcard: EntityBindingKind, 
+    wildcard: EntityWildcard, 
 ) -> Result<(TokenIter, TokenStream), ()> {
     let result = collect_entity_clause(caravan, current);
     let (caravan, entity_clause) = match result {
@@ -24,7 +24,7 @@ pub(super) fn entity_step_exit(
         Err(err) => return Err(err),
     };
 
-    return query_step(caravan, package, exit_rule, is_nested, entity_clause);
+    return query_step(caravan, package, exit_rule, is_nested, (wildcard, entity_clause));
 }
 
 fn collect_entity_clause(
