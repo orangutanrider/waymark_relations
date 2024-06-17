@@ -2,6 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
+    entity_step::EntityWildcard,
     bindings_step::bindings_step, 
     common::collect_until_punct::*, 
     syntax_in::*
@@ -13,7 +14,7 @@ pub(crate) fn query_step(
     exit_rule: &TokenStream,
     is_nested: bool,
 
-    entity_clause: Vec<TokenTree>, 
+    entity_clause: (EntityWildcard, Vec<TokenTree>), 
 ) -> Result<(TokenIter, TokenStream), ()> {
     let token = caravan.next();
     let Some(token) = token else {

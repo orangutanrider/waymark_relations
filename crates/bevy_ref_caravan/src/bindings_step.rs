@@ -2,7 +2,10 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::entity_step_entrance, syntax_in::*
+    common::{collect_until_punct::*, *}, 
+    construction_step::construction_step, 
+    entity_step::*, 
+    syntax_in::*,
 };
 
 pub(crate) enum IntoNext {
@@ -16,8 +19,8 @@ pub(crate) fn bindings_step(
     exit_rule: &TokenStream,
     is_nested: bool,
 
-    entity_clause:  Vec<TokenTree>, 
-    query_clause:  Vec<TokenTree>,
+    entity_clause: (EntityWildcard, Vec<TokenTree>), 
+    query_clause: Vec<TokenTree>,
 ) -> Result<(TokenIter, TokenStream), ()> {
     let (mut caravan, bindings_clause, into_next) = match collect_until_bindings_end(caravan, Vec::new(), is_nested) {
         Ok(ok) => ok,

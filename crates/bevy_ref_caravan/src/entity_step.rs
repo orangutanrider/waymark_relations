@@ -1,5 +1,5 @@
 mod exit_step; use exit_step::*;
-//mod wildcard_step; use wildcard_step::*;
+mod wildcard_step; use wildcard_step::*;
 mod nested_step; use nested_step::*;
 
 use proc_macro::*;
@@ -9,7 +9,7 @@ use crate::bindings_step::IntoNext;
 use crate::syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER;
 
 pub(crate) fn entity_step_entrance(
-    caravan: TokenIter, 
+    mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
     is_nested: bool,
@@ -39,11 +39,20 @@ pub(crate) fn entity_step_entrance(
         },
         // Into single entity step
         TokenTree::Ident(_) => {
-            return entity_step_exit(caravan, package, exit_rule, is_nested, current);
+            return entity_step_exit(caravan, package, exit_rule, is_nested, current, EntityWildcard::Direct);
         },
         // Into wildcard step, entity step following.
-        TokenTree::Punct(_) => {
-            todo!()
+        TokenTree::Punct(current) => {
+            let wildcard = match wildcard_step(current) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            let Some(current) = caravan.next() else {
+                return Err(())
+            };
+
+            return entity_step_exit(caravan, package, exit_rule, is_nested, current, wildcard);
         },
         // Unexpected, throw error.
         TokenTree::Literal(_) => {
@@ -52,24 +61,10 @@ pub(crate) fn entity_step_entrance(
     }
 }
 
-/* 
-#[derive(Clone, Copy)]
-/// Matched to entity wildcard symbols.
-enum EntityBindingKind {
-    /// DEFAULT
-    /// A waymark binding.
-    /// The component is used directly, feeding the entity data into the query; no entity binding is created.
+pub(crate) enum EntityWildcard {
     Direct,
-    /// LIFT ^
-    /// A waymark binding.
-    /// The component is used to create an entity binding, without shadowing the component binding that the entity came from.
-    Lifted,
-    /// OVERLAP ~
-    /// A waymark binding.
-    /// The component is used to create an entity binding, that shadows the component binding that the entity came from.
-    Overlap,
-    /// LITERAL @
-    /// A literal entity binding.
     Literal,
+    DeRefLiteral,
+    Overlap,
+    Lifted,
 }
-*/
