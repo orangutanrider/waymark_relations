@@ -1,5 +1,5 @@
 mod exit_step; use exit_step::*;
-//mod wildcard_step; use wildcard_step::*;
+mod wildcard_step; use wildcard_step::*;
 mod nested_step; use nested_step::*;
 
 use proc_macro::*;
