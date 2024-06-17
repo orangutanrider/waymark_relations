@@ -5,6 +5,7 @@ mod syntax_out; use syntax_out::exit_rule_default;
 
 // Caravan.
 mod root_step; use root_step::root_step;
+mod exit_rule_step;
 mod entity_step;
 mod query_step;
 mod bindings_step;
