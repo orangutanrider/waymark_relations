@@ -1,4 +1,3 @@
-
 use proc_macro::TokenStream;
 use std::str::FromStr;
 use crate::common::compile_error_stream;

@@ -9,6 +9,7 @@ mod exit_rule_step;
 mod entity_step;
 mod query_step;
 mod bindings_step;
+mod exit_rule_override_step;
 mod construction_step;
 
 use proc_macro::*;
