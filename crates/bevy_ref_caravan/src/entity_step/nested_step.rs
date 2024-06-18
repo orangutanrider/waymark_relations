@@ -17,7 +17,7 @@ pub(super) fn nested_entity_step_entrance(
     return entity_step_entrance(caravan, package, exit_rule, true, false, token)
 }
 
-
+/// This is supposed to come after the end of the scope
 pub(super) fn nested_entity_step_exit(
     mut caravan: TokenIter, 
     package: TokenStream,

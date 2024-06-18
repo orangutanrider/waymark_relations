@@ -11,7 +11,7 @@ enum BindingsNext {
     Escape,
 }
 
-pub(crate) fn bindings_step(
+pub(crate) fn  bindings_step(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
@@ -53,10 +53,10 @@ pub(crate) fn bindings_step(
             }
 
             let Some(current) = caravan.next() else {
-                return Err(())
+                return Ok((caravan, package))
             };
 
-            return entity_step_entrance(caravan, package, exit_rule, is_nested, false, current);
+            return entity_step_entrance(caravan, package, exit_rule, true, false, current);
         },
     }
 }
@@ -94,15 +94,6 @@ fn collect_until_bindings_end(
             }
         },
     }
-
-
-    // match token.spacing() { // Is a token combo?
-    //     Spacing::Joint => {/* Proceed */},
-    //     Spacing::Alone => {
-    //         output.push(TokenTree::Punct(token));
-    //         return collect_until_bindings_end(caravan, output, is_nested) // If not, continue and add token to output.
-    //     },
-    // }
 
     // Is INTO_NEXT punct combo?
     let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
