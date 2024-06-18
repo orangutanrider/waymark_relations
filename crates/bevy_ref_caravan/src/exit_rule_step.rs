@@ -2,7 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::common::collect_until_punct::*;
-use crate::syntax_in::LINE_BREAK;
+use crate::syntax_in::{LINE_BREAK, EXIT_RULE_DELIMITER};
 
 pub(crate) fn exit_rule_step(
     mut caravan: TokenIter, 
@@ -14,6 +14,11 @@ pub(crate) fn exit_rule_step(
 
     match token {
         TokenTree::Group(group) => {
+            // Validate delimiter
+            if group.delimiter() != EXIT_RULE_DELIMITER {
+                return Err(())
+            }
+
             // Collect group's tokens.
             exit_rule.extend(group.stream());
 
