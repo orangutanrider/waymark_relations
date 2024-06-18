@@ -45,7 +45,10 @@ pub(crate) fn exit_rule_override_step(
             (caravan, exit_rule, next)
         },
         _ => {
-            let (caravan, exit_rule, next) = match collect_until_override_end(caravan, Vec::new(), is_nested) {
+            let mut output = Vec::new();
+            output.push(token);
+
+            let (caravan, exit_rule, next) = match collect_until_override_end(caravan, output, is_nested) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
