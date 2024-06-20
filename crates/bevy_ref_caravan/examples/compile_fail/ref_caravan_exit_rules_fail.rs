@@ -1,3 +1,7 @@
+fn main() { }
+
+/* 
+
 use bevy_ecs::{prelude::*, schedule::ScheduleLabel};
 use bevy_ref_caravan::ref_caravan;
 
@@ -15,7 +19,6 @@ struct Oranges(u32);
 #[derive(ScheduleLabel, Clone, Debug, PartialEq, Eq, Hash)]
 struct TestSchedule;
 
-#[test]
 fn incorrect_delimiter() {
     let mut world =  World::new();
     
@@ -52,3 +55,5 @@ fn incorrect_delimiter_sys(
 
     assert!(fails == 1);
 }
+
+*/

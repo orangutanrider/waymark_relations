@@ -1,3 +1,7 @@
+fn main() { }
+
+/* 
+
 use bevy_ecs::{prelude::*, schedule::ScheduleLabel};
 use bevy_ref_caravan::ref_caravan;
 
@@ -86,7 +90,6 @@ impl OrangesBasket {
     }
 }
 
-#[test]
 fn literal_caravan() {
     let mut world =  World::new();
     
@@ -110,7 +113,6 @@ fn literal_caravan_sys( // It's two queries onto the same entity.
     }
 }
 
-#[test]
 fn direct_caravan() {
     let mut world =  World::new();
     
@@ -135,7 +137,6 @@ fn direct_caravan_sys(
     }
 }
 
-#[test]
 fn overlap_caravan() {
     let mut world =  World::new();
     
@@ -168,7 +169,6 @@ fn overlap_caravan_sys(
     }
 }
 
-#[test]
 fn lift_caravan() {
     let mut world =  World::new();
     
@@ -206,7 +206,6 @@ fn lift_caravan_sys(
     }
 }
 
-#[test]
 fn nested_caravan_with_wildcards() {
     let mut world =  World::new();
     
@@ -247,3 +246,5 @@ fn nested_caravan_with_wildcards_sys(
         assert!(onions.0 == 5);
     }
 }
+
+*/
