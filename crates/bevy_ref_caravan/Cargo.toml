@@ -8,10 +8,7 @@ edition = "2021"
 [lib]
 proc-macro = true   
 
-[dependencies]
-#proc-macro2 = { version = "1.0.84" }
-#quote = { version = "1.0.36" }
+[features]
+test = []
 
-[dev-dependencies]
-bevy_ecs = { version = "0.13.2" }
-trybuild = { version = "1.0.96" }
+[profile.test]
