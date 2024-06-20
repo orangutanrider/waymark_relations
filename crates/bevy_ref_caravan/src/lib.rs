@@ -31,7 +31,7 @@ pub fn ref_caravan(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
-#[cfg(test)]
+#[cfg(debug_assertions)]
 pub fn assert_ref_caravan(input: TokenStream) -> TokenStream {
     let mut caravan = input.into_iter();
 
@@ -68,7 +68,7 @@ pub fn assert_ref_caravan(input: TokenStream) -> TokenStream {
 }
 
 /// Insertion vulnerable. Input message is flanked by " ", if the input message contains quotes, then it must also contain extra \ to flag those quotes.
-#[cfg(test)]
+#[cfg(debug_assertions)]
 fn panic_stream(msg_insert: &str) -> TokenStream {
     use std::str::FromStr;
     let Ok(stream) = TokenStream::from_str(&("panic!(\"".to_owned() + msg_insert + "\")")) else {
