@@ -55,6 +55,7 @@ pub fn assert_ref_caravan(input: TokenStream) -> TokenStream {
 
     // Compare groups
     let macro_group = macro_group.to_string();
+    let expansion_group = expansion_group.stream();
     let expansion_group = expansion_group.to_string();
 
     match macro_group == expansion_group {
