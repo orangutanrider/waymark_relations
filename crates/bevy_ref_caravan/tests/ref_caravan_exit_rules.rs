@@ -1,89 +1,84 @@
-use bevy_ecs::{prelude::*, schedule::ScheduleLabel};
-use bevy_ref_caravan::ref_caravan;
+use bevy_ref_caravan::*;
 
-#[derive(Component)]
-struct ToOranges(Entity);
-impl ToOranges {
-    fn go(&self) -> Entity {
-        return self.0
-    }
-}
-
-#[derive(Component)]
-struct Oranges(u32);
-
-#[derive(ScheduleLabel, Clone, Debug, PartialEq, Eq, Hash)]
-struct TestSchedule;
-
+// Expected valid statements.
 #[test]
-fn exit_rule_return_caravan() {
-    let mut world =  World::new();
-    
-    // Create entities + components
-    let destination = world.spawn(Oranges(0)).id(); 
-    world.spawn(ToOranges(destination)); // Origin
-    // 2nd batch
-    let destination = world.spawn_empty().id();
-    world.spawn(ToOranges(destination)); // Origin
+fn single_line_exit_rule_ref_carvan() {
+    assert_ref_caravan!((
+        ? return;
+        to_oranges :: oranges_q = oranges;
+    ) (
+        let Ok(oranges) = oranges_q.get(to_oranges.go()) else {
+            return
+        };
+    ));
 
-    // Create system
-    let mut schedule = Schedule::new(TestSchedule);
-    schedule.add_systems(exit_rule_return_caravan_sys); // Assertion system
-    schedule.initialize(&mut world).unwrap();
-    schedule.run(&mut world); // Run system
-}
-
-fn exit_rule_return_caravan_sys(
-    origin_q: Query<&ToOranges>,
-    dest_q: Query<&Oranges>,
-) {
-    for to_oranges in origin_q.iter() {
-        ref_caravan!(
-            ? return;
-            to_oranges :: dest_q = oranges;
-        );
-
-        assert!(oranges.0 == 0);
-    }
-
-    // Unreachable code, because it returns.
-    panic!()
+    // It is specifically without the line break at the end
 }
 
 #[test]
-fn exit_rule_count_caravan() {
-    let mut world =  World::new();
-    
-    // Create entities + components
-    let destination = world.spawn(Oranges(0)).id(); 
-    world.spawn(ToOranges(destination)); // Origin
-    // 2nd batch
-    let destination = world.spawn_empty().id();
-    world.spawn(ToOranges(destination)); // Origin
-
-    // Create system
-    let mut schedule = Schedule::new(TestSchedule);
-    schedule.add_systems(exit_rule_count_caravan_sys); // Assertion system
-    schedule.initialize(&mut world).unwrap();
-    schedule.run(&mut world); // Run system
+fn scoped_exit_rule_ref_carvan() {
+    assert_ref_caravan!((
+        ? {
+            foobar = foobar + 1;
+            return;
+        };
+        to_oranges :: oranges_q = oranges;
+    ) (
+        let Ok(oranges) = oranges_q.get(to_oranges.go()) else {
+            foobar = foobar + 1;
+            return;
+        };
+    ));
 }
 
-fn exit_rule_count_caravan_sys(
-    origin_q: Query<&ToOranges>,
-    dest_q: Query<&Oranges>,
-) {
-    let mut fails: u32 = 0;
-    for to_oranges in origin_q.iter() {
-        ref_caravan!(
-            ? {
-                fails = fails + 1;
-                continue;
-            };
-            to_oranges :: dest_q = oranges;
+#[test]
+fn multi_exit_rule_ref_carvan() {
+    assert_ref_caravan!((
+        to_oranges :: oranges_q = oranges;
+        to_bananas :: bananas_q = bananas;
+        ? return;
+        to_apples :: apples_q = apples;
+        to_carrots :: carrots_q = carrots;
+        ? {
+            foobar = foobar + 1;
+            return;
+        };
+        to_lemons :: lemons_q = lemons;
+        to_grapes :: grapes_q = grapes;
+    ) (
+        let Ok(oranges) = oranges_q.get(to_oranges.go()) else {
+            continue;
+        };
+        let Ok(bananas) = bananas_q.get(to_bananas.go()) else {
+            continue;
+        };
+        let Ok(apples) = apples_q.get(to_apples.go()) else {
+            return
+        };
+        let Ok(carrots) = carrots_q.get(to_carrots.go()) else {
+            return
+        };
+        let Ok(lemons) = lemons_q.get(to_lemons.go()) else {
+            foobar = foobar + 1;
+            return;
+        };
+        let Ok(grapes) = grapes_q.get(to_grapes.go()) else {
+            foobar = foobar + 1;
+            return;
+        };
+    ));
+}
+
+// Expected invalid statements.
+#[test]
+fn incorrect_delimiter() {
+    assert_ref_caravan!((
+        ? (
+            foobar = foobar + 1;
+            return;
         );
-
-        assert!(oranges.0 == 0);
-    }
-
-    assert!(fails == 1);
+        to_oranges :: oranges_q = oranges;
+    ) (
+        compile_error!("Undefined")
+    ));
 }

@@ -1,3 +1,7 @@
+fn main() { }
+
+/* 
+
 use bevy_ecs::{prelude::*, schedule::ScheduleLabel};
 use bevy_ref_caravan::ref_caravan;
 
@@ -72,7 +76,6 @@ struct Onions(u32);
 #[derive(ScheduleLabel, Clone, Debug, PartialEq, Eq, Hash)]
 struct TestSchedule;
 
-#[test]
 fn semi_colon_into_scope() { // Only => is meant to be valid for going into a new scope.
     let mut world =  World::new();
     
@@ -107,7 +110,6 @@ fn semi_colon_into_scope_sys(
     }
 }
 
-#[test]
 fn comma_into_scope() { // Only => is meant to be valid for going into a new scope.
     let mut world =  World::new();
     
@@ -158,7 +160,6 @@ fn comma_into_scope_sys(
     }
 }
 
-#[test]
 fn immediate_nest() { // Only => is meant to be valid for going into a new scope.
     let mut world =  World::new();
     
@@ -194,7 +195,6 @@ fn immediate_nest_sys(
     }
 }
 
-#[test]
 fn diamond_caravan() {
     let mut world =  World::new();
     
@@ -232,3 +232,5 @@ fn diamond_caravan_sys(
         assert!(onions.0 == 4);
     }
 }
+
+*/

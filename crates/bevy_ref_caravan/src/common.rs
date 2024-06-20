@@ -4,8 +4,9 @@ use std::str::*;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
-pub(crate) fn compile_error_stream(msg: &str) -> TokenStream {
-    let Ok(stream) = TokenStream::from_str(&("compile_error!(\"".to_owned() + msg + "\")")) else {
+/// Insertion vulnerable. Input message is flanked by " ", if the input message contains quotes, then it must also contain extra \ to flag those quotes.
+pub(crate) fn compile_error_stream(msg_insert: &str) -> TokenStream {
+    let Ok(stream) = TokenStream::from_str(&("compile_error!(\"".to_owned() + msg_insert + "\")")) else {
         panic!("Unexpected lex error while trying to create a compile_error! token stream.")
     };
 

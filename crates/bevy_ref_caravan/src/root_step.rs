@@ -2,7 +2,6 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    bindings_step::IntoNext,
     entity_step::entity_step_entrance,
     exit_rule_step::exit_rule_step,
     syntax_in::EXIT_RULE_NOTATION,
@@ -20,7 +19,7 @@ pub(crate) fn root_step(
 
     match token {
         TokenTree::Ident(_) => {
-            let (caravan, package) = match entity_step_entrance(caravan, package, &exit_rule, false, IntoNext::Escape, token) {
+            let (caravan, package) = match entity_step_entrance(caravan, package, &exit_rule, false, false, token) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -42,7 +41,7 @@ pub(crate) fn root_step(
                 false => {
                     let token = TokenTree::Punct(punct);
 
-                    let (caravan, package) = match entity_step_entrance(caravan, package, &exit_rule, false, IntoNext::Escape, token) {
+                    let (caravan, package) = match entity_step_entrance(caravan, package, &exit_rule, false, false, token) {
                         Ok(ok) => ok,
                         Err(err) => return Err(err),
                     };

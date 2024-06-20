@@ -1,7 +1,7 @@
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
-use crate::{bindings_step::IntoNext, syntax_in::{LINE_BREAK, NEXT}};
+use crate::syntax_in::{LINE_BREAK, NEXT};
 
 use super::entity_step_entrance;
 
@@ -14,10 +14,10 @@ pub(super) fn nested_entity_step_entrance(
         return Ok((caravan, package)) // End of iterator
     };
 
-    return entity_step_entrance(caravan, package, exit_rule, true, IntoNext::Escape, token)
+    return entity_step_entrance(caravan, package, exit_rule, true, false, token)
 }
 
-
+/// This is supposed to come after the end of the scope
 pub(super) fn nested_entity_step_exit(
     mut caravan: TokenIter, 
     package: TokenStream,

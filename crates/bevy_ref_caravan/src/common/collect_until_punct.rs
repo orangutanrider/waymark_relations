@@ -120,6 +120,14 @@ pub(crate) fn match_one_punct_combo(
     current: Punct,
     mut output: Vec<TokenTree>,
 ) -> (PunctMatch, TokenIter, Vec<TokenTree>) {
+    match current.spacing() {
+        Spacing::Joint => {/* Proceed */},
+        Spacing::Alone => { // Is combo?
+            output.push(TokenTree::Punct(current));
+            return (PunctMatch::NotMatching, iter, output); // If not, add to output and terminate.
+        },
+    }
+
     let Some(combo1) = punct_combo.next() else { // Get combo 1st element.
         output.push(TokenTree::Punct(current));
         return (PunctMatch::NotMatching, iter, output); // If not, add to output and terminate.
