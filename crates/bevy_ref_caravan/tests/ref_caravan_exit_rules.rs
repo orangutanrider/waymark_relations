@@ -28,7 +28,6 @@ fn scoped_exit_rule_ref_carvan() {
             foobar = foobar + 1;
             return;
         };
-        
     ));
 }
 
@@ -71,6 +70,7 @@ fn multi_exit_rule_ref_carvan() {
 }
 
 // Expected invalid statements.
+#[test]
 fn incorrect_delimiter() {
     assert_ref_caravan!((
         ? (

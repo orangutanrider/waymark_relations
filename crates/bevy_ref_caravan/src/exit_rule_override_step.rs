@@ -78,7 +78,7 @@ pub(crate) fn exit_rule_override_step(
             }
 
             let Some(current) = caravan.next() else {
-                return Err(())
+                return Ok((caravan, package))
             };
 
             return entity_step_entrance(caravan, package, exit_rule, is_nested, false, current);
