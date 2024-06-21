@@ -72,8 +72,8 @@ fn comments() {
         to_oranges /*
             Foo
         */
-        :: oranges_q = oranges // Bar
-        // Bar
+        :: oranges_q = /* Foo */ oranges // Bar
+        // FooBar
     ) (
         let Ok(oranges) = oranges_q.get(to_oranges.go()) else {
             continue;
