@@ -8,6 +8,11 @@ use crate::{
     syntax_in::*
 };
 
+pub(crate) enum QueryMutation {
+    GetMut,
+    Get,
+}
+
 pub(crate) fn query_step(
     mut caravan: TokenIter, 
     package: TokenStream,
@@ -32,13 +37,22 @@ pub(crate) fn query_step(
 fn collect_query_clause(
     caravan: TokenIter, 
     current: TokenTree,
-) -> Result<(TokenIter, Vec<TokenTree>), ()> {
+) -> Result<(TokenIter, (Vec<TokenTree>, QueryMutation)), ()> {
     let mut output = Vec::new();
-    output.push(current);
+    let mut mutation = QueryMutation::Get;
+
+    if current.to_string() == "mut" { // You can declare mutability within the query step.
+        mutation = QueryMutation::GetMut;
+    }
+    else {
+        output.push(current);
+    }
+
+    
     let (result, iter, output) = collect_until_matching_punct(QUERY_TO_BINDINGS_PUNCT, caravan, output);
 
     match result {
-        PunctMatch::Matching => return Ok((iter, output)),
+        PunctMatch::Matching => return Ok((iter, (output, mutation))),
         PunctMatch::NotMatching => return Err(()),
         // PunctMatch::ConnectedMatch => return Err(()),
     }

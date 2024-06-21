@@ -4,7 +4,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 use crate::common::collect_until_punct::*;
 use crate::construction_step::construction_step;
 use crate::entity_step::{entity_step_entrance, EntityWildcard};
-use crate::syntax_in::{EXIT_RULE_DELIMITER, INTO_NEXT, LINE_BREAK, NEXT};
+use crate::syntax_in::{ABBREVIATED_RETURN, EXIT_RULE_DELIMITER, INTO_NEXT, LINE_BREAK, NEXT};
 
 enum OverrideNext {
     IntoNext,
@@ -48,10 +48,19 @@ pub(crate) fn exit_rule_override_step(
             let mut output = Vec::new();
             output.push(token);
 
-            let (caravan, exit_rule, next) = match collect_until_override_end(caravan, output, is_nested) {
+            let (caravan, mut exit_rule, next) = match collect_until_override_end(caravan, output, is_nested) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
+
+            match exit_rule.get(0) { // If token 0 is just an "r" then it will be re-created as a "return"
+            Some(exit_rule_0) => {
+                if exit_rule_0.to_string() == ABBREVIATED_RETURN {
+                    exit_rule[0] = TokenTree::Ident(Ident::new("return", exit_rule_0.span()));
+                }
+            },
+            None => { /* Do nothing */},
+        };
 
             let exit_rule = TokenStream::from_iter(exit_rule.into_iter());
 
