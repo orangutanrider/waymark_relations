@@ -15,7 +15,7 @@ pub(crate) const ENTIY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
 // Symbols
 pub(crate) const LINE_BREAK: char = ';';
 pub(crate) const NEXT: char = ',';
-pub(crate) const INTO_NEXT: [char; 2] = ['=', '>']; // =>
+pub(crate) const INTO_NEXT: [char; 2] = ['-', '>']; // ->
 
 pub(crate) const EXIT_RULE_NOTATION: char = '?';
 pub(crate) const ABBREVIATED_RETURN: &str = "r";

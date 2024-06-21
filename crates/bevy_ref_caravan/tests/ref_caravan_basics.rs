@@ -52,7 +52,7 @@ fn mut_ref_caravan() {
 #[test]
 fn into_next_ref_caravan() {
     assert_ref_caravan!((
-        to_hub :: hub_q = to_oranges => to_oranges :: oranges_q = oranges;
+        to_hub :: hub_q = to_oranges -> to_oranges :: oranges_q = oranges;
     ) (
         let Ok(to_oranges) = hub_q.get(to_hub.go()) else {
             continue;

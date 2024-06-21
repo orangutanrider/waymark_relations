@@ -62,7 +62,7 @@ fn suffix_lift_ref_caravan() {
 #[test]
 fn nested_wildcards_ref_caravan() {
     assert_ref_caravan!((
-        @hub :: hub_q = (to_oranges_entity, apples_entity, to_carrots, to_onions) => {
+        @hub :: hub_q = (to_oranges_entity, apples_entity, to_carrots, to_onions) -> {
             ^to_oranges_entity :: oranges_q = oranges,
             ~apples_entity :: apples_q = apples,
             to_carrots :: carrots_q = carrots,
@@ -93,7 +93,7 @@ fn nested_wildcards_ref_caravan() {
 #[test]
 fn wildcards_on_scope() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (oranges_entity, apples_entity) => ~{
+        to_hub :: hub_q = (oranges_entity, apples_entity) -> ~{
             oranges_entity :: oranges_q = oranges,
             apples_entity :: apples_q = apples,
         }
