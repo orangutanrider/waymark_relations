@@ -63,3 +63,20 @@ fn into_next_ref_caravan() {
         };
     ));
 }
+
+#[test]
+fn comments() {
+    // Function-like macros inhernetly support comments.
+    // Apart for Doc-comments, but there is no reason to add doc comments inside this macro.
+    assert_ref_caravan!((
+        to_oranges /*
+            Foo
+        */
+        :: oranges_q = oranges // Bar
+        // Bar
+    ) (
+        let Ok(oranges) = oranges_q.get(to_oranges.go()) else {
+            continue;
+        };
+    ));
+}
