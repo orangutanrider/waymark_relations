@@ -2,11 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::{collect_until_punct::*, *}, 
-    construction_step::construction_step, 
-    entity_step::*, 
-    exit_rule_override_step::exit_rule_override_step, 
-    syntax_in::*
+    common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::*, exit_rule_override_step::exit_rule_override_step, query_step::QueryMutation, syntax_in::*
 };
 
 enum BindingsNext {
@@ -22,15 +18,22 @@ pub(crate) fn  bindings_step(
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>), 
-    query_clause: Vec<TokenTree>,
+    query_clause: (Vec<TokenTree>, QueryMutation),
 ) -> Result<(TokenIter, TokenStream), ()> {
     let (mut caravan, bindings_clause, next) = match collect_until_bindings_end(caravan, Vec::new(), is_nested) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
     
-    let mut_iter = bindings_clause.iter();
-    let contains_mut = contains_mut_recursive(mut_iter);
+    // Unwrap query clause, and check for mutation
+    let (query_clause, contains_mut) = match query_clause.1 {
+        QueryMutation::GetMut => (query_clause.0, true),
+        QueryMutation::Get => {
+            let mut_iter = bindings_clause.iter();
+            let contains_mut = contains_mut_recursive(mut_iter);
+            (query_clause.0, contains_mut)
+        },
+    };
 
     match next {
         BindingsNext::ExitRuleOverride => return exit_rule_override_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause, bindings_clause, contains_mut),
