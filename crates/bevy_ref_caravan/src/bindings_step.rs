@@ -2,7 +2,11 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::*, exit_rule_override_step::{self, exit_rule_override_step}, syntax_in::*
+    common::{collect_until_punct::*, *}, 
+    construction_step::construction_step, 
+    entity_step::*, 
+    exit_rule_override_step::exit_rule_override_step, 
+    syntax_in::*
 };
 
 enum BindingsNext {

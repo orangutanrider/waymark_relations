@@ -2,7 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::common::collect_until_punct::*;
-use crate::syntax_in::{LINE_BREAK, EXIT_RULE_DELIMITER};
+use crate::syntax_in::{ABBREVIATED_RETURN, EXIT_RULE_DELIMITER, LINE_BREAK};
 
 pub(crate) fn exit_rule_step(
     mut caravan: TokenIter, 
@@ -41,8 +41,17 @@ pub(crate) fn exit_rule_step(
             let mut output = Vec::new();
             output.push(token);
 
-            let (end, caravan, new_exit_rule) = collect_until_matching_punct(LINE_BREAK, caravan, output);
+            let (end, caravan, mut new_exit_rule) = collect_until_matching_punct(LINE_BREAK, caravan, output);
 
+            match new_exit_rule.get(0) { // If token 0 is just an "r" then it will be re-created as a "return"
+                Some(exit_rule_0) => {
+                    if exit_rule_0.to_string() == ABBREVIATED_RETURN {
+                        new_exit_rule[0] = TokenTree::Ident(Ident::new("return", exit_rule_0.span()));
+                    }
+                },
+                None => { /* Do nothing */},
+            };
+            
             exit_rule.extend(new_exit_rule.into_iter());
 
             match end {
