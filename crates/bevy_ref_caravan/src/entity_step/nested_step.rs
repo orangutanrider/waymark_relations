@@ -1,7 +1,7 @@
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
-use crate::syntax_in::{LINE_BREAK, NEXT};
+use crate::syntax_in::{LINE_BREAK, SCOPED_BREAK};
 
 use super::entity_step_entrance;
 
@@ -40,7 +40,7 @@ pub(super) fn nested_entity_step_exit(
 
     match is_nested {
         true => {
-            if token != NEXT { return Err(()) } // Is NEXT?
+            if token != SCOPED_BREAK { return Err(()) } // Is NEXT?
 
             return nested_entity_step_entrance(caravan, package, exit_rule)
         },

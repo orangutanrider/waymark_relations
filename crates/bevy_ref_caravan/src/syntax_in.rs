@@ -14,8 +14,14 @@ pub(crate) const ENTIY_STEP_SCOPABLE_DELIMITER: Delimiter = Delimiter::Brace;
 
 // Symbols
 pub(crate) const LINE_BREAK: char = ';';
-pub(crate) const NEXT: char = ',';
-pub(crate) const INTO_NEXT: [char; 2] = ['-', '>']; // ->
+pub(crate) const SCOPED_BREAK: char = ',';
+
+pub(crate) const NEXT: [char; 2] = ['-', '>']; // ->
+pub(crate) const INTO_NEXT: [char; 2] = ['=', '>']; // =>
+// The system only knows the difference between the above two combo tokens by the character of their first symbol. 
+// If they share the same character type for this, the system will break.
+pub(crate) const NEXT_BANG: char = NEXT[0]; 
+pub(crate) const INTO_BANG: char = INTO_NEXT[0];
 
 pub(crate) const EXIT_RULE_NOTATION: char = '?';
 pub(crate) const ABBREVIATED_RETURN: &str = "r";

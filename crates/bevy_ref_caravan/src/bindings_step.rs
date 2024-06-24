@@ -7,7 +7,7 @@ use crate::{
 
 enum BindingsNext {
     ExitRuleOverride,
-    IntoNext,
+    Next,
     Escape,
 }
 
@@ -37,7 +37,7 @@ pub(crate) fn  bindings_step(
 
     match next {
         BindingsNext::ExitRuleOverride => return exit_rule_override_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause, bindings_clause, contains_mut),
-        BindingsNext::IntoNext => {
+        BindingsNext::Next => {
             let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
@@ -91,7 +91,7 @@ fn collect_until_bindings_end(
     // Is valid singular token?
     match is_nested {
         true => {
-            if token == NEXT { // For nested the NEXT symbol is valid.
+            if token == SCOPED_BREAK { // For nested the NEXT symbol is valid.
                 return Ok((caravan, output, BindingsNext::Escape))
             }
         },
@@ -103,9 +103,9 @@ fn collect_until_bindings_end(
     }
 
     // Is INTO_NEXT punct combo?
-    let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
+    let (results, caravan, output) = match_one_punct_combo(NEXT.iter(), caravan, token, output);
     match results {
-        PunctMatch::Matching => return Ok((caravan, output, BindingsNext::IntoNext)),
+        PunctMatch::Matching => return Ok((caravan, output, BindingsNext::Next)),
         _ => {
             return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
         },
