@@ -13,6 +13,18 @@ fn literal_ref_caravan() {
 }
 
 #[test]
+fn de_ref_literal_ref_caravan() {
+    assert_ref_caravan!((
+        *entity :: oranges_q = oranges
+    ) (
+        let entity = *entity;
+        let Ok(oranges) = oranges_q.get(entity) else {
+            continue;
+        };
+    ));
+}
+
+#[test]
 fn direct_ref_caravan() {
     assert_ref_caravan!((
         |to_oranges :: oranges_q = oranges
