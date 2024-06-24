@@ -14,19 +14,16 @@ pub(crate) enum QueryMutation {
 }
 
 pub(crate) fn query_step(
-    mut caravan: TokenIter, 
+    current: TokenTree,
+
+    caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>), 
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let token = caravan.next();
-    let Some(token) = token else {
-        return Err(())
-    };
-
-    let (caravan, query_clause) = match collect_query_clause(caravan, token) {
+    let (caravan, query_clause) = match collect_query_clause(caravan, current) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };

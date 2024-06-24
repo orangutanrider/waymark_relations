@@ -1,6 +1,8 @@
+use std::vec::IntoIter;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
+use crate::entity_step::EntityWildcard;
 use crate::query_step::query_step;
 
 pub(crate) fn auto_fill_query_steps(
@@ -8,14 +10,28 @@ pub(crate) fn auto_fill_query_steps(
     package: TokenStream,
     exit_rule: &TokenStream,
     is_nested: bool,
-) -> Result<(TokenIter, TokenStream), ()> {
-    // Repeat query steps until scope exhaustion.
 
-    //query_step(caravan, package, exit_rule, is_nested, entity_clause)
-    todo!()
+    mut bindings: IntoIter<Vec<TokenTree>>,
+) -> Result<(TokenIter, TokenStream), ()> {
+    let Some(current) = caravan.next() else {
+        return Ok((caravan, package));
+    };
+
+    match current {
+        TokenTree::Group(group) => {
+            todo!()
+        },
+        _ => {
+            let Some(entity_clause) = bindings.next() else {
+                return Err(())
+            };
+
+            return query_step(current, caravan, package, exit_rule, is_nested, (EntityWildcard::Direct, entity_clause));
+        }, 
+    }
 }
 
-pub(crate) fn collect_individual_bindings(bindings_clause: Vec<TokenTree>) -> Result<Vec<TokenStream>, ()> {
+pub(crate) fn collect_individual_bindings(bindings_clause: Vec<TokenTree>) -> Result<Vec<Vec<TokenTree>>, ()> {
     let caravan = bindings_clause.into_iter();
     let caravan = TokenStream::from_iter(caravan).into_iter();
 
@@ -30,7 +46,7 @@ pub(crate) fn collect_individual_bindings(bindings_clause: Vec<TokenTree>) -> Re
 
 fn entrance(
     mut caravan: TokenIter,
-    collected: &mut Vec<TokenStream>
+    collected: &mut Vec<Vec<TokenTree>>
 ) -> Result<(), ()> {
     let Some(token) = caravan.next() else {
         return Ok(())
@@ -55,16 +71,14 @@ fn entrance(
 
             let mut output= Vec::new();
             collect_unchecked(TokenTree::Punct(token), &mut caravan, &mut output);
-            let indv_binding_clause = TokenStream::from_iter(output.into_iter());
-            collected.push(indv_binding_clause);
+            collected.push(output);
 
             return entrance(caravan, collected)
         },
         _ => {
             let mut output= Vec::new();
             collect_unchecked(token, &mut caravan, &mut output);
-            let indv_binding_clause = TokenStream::from_iter(output.into_iter());
-            collected.push(indv_binding_clause);
+            collected.push(output);
 
             return entrance(caravan, collected)
         }
