@@ -102,12 +102,29 @@ fn collect_until_bindings_end(
         },
     }
 
-    // Is INTO_NEXT punct combo?
-    let (results, caravan, output) = match_one_punct_combo(NEXT.iter(), caravan, token, output);
-    match results {
-        PunctMatch::Matching => return Ok((caravan, output, BindingsNext::Next)),
-        _ => {
-            return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
-        },
+
+    if token == NEXT_BANG { 
+        // match_one_punct_combo ill-suited function, inefficient computation.
+        let (results, caravan, output) = match_one_punct_combo(NEXT.iter(), caravan, token, output);
+        match results {
+            PunctMatch::Matching => return Ok((caravan, output, BindingsNext::Next)),
+            _ => {
+                return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
+            },
+        }
+    }
+    else if token == INTO_BANG { 
+        // match_one_punct_combo ill-suited function, inefficient computation.
+        let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
+        match results {
+            PunctMatch::Matching => return Ok((caravan, output, BindingsNext::Next)),
+            _ => {
+                return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
+            },
+        }
+    }
+    else {
+        output.push(TokenTree::Punct(token));
+        return collect_until_bindings_end(caravan, output, is_nested)
     }
 }

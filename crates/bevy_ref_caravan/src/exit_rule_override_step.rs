@@ -4,7 +4,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 use crate::common::collect_until_punct::*;
 use crate::construction_step::construction_step;
 use crate::entity_step::{entity_step_entrance, EntityWildcard};
-use crate::syntax_in::{ABBREVIATED_RETURN, EXIT_RULE_DELIMITER, NEXT, LINE_BREAK, SCOPED_BREAK};
+use crate::syntax_in::*;
 
 enum OverrideNext {
     Next,
@@ -162,12 +162,28 @@ fn collect_until_override_end(
         },
     }
 
-    // Is INTO_NEXT punct combo?
-    let (results, caravan, output) = match_one_punct_combo(NEXT.iter(), caravan, token, output);
-    match results {
-        PunctMatch::Matching => return Ok((caravan, output, OverrideNext::Next)),
-        _ => {
-            return collect_until_override_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
-        },
+    if token == NEXT_BANG { 
+        // match_one_punct_combo ill-suited function, inefficient computation.
+        let (results, caravan, output) = match_one_punct_combo(NEXT.iter(), caravan, token, output);
+        match results {
+            PunctMatch::Matching => return Ok((caravan, output, OverrideNext::Next)),
+            _ => {
+                return collect_until_override_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
+            },
+        }
+    }
+    else if token == INTO_BANG { 
+        // match_one_punct_combo ill-suited function, inefficient computation.
+        let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
+        match results {
+            PunctMatch::Matching => return Ok((caravan, output, OverrideNext::Next)),
+            _ => {
+                return collect_until_override_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
+            },
+        }
+    }
+    else {
+        output.push(TokenTree::Punct(token));
+        return collect_until_override_end(caravan, output, is_nested)
     }
 }
