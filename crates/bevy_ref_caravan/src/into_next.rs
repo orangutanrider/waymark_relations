@@ -1,6 +1,20 @@
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
+use crate::query_step::query_step;
+
+pub(crate) fn auto_fill_query_steps(
+    mut caravan: TokenIter, 
+    package: TokenStream,
+    exit_rule: &TokenStream,
+    is_nested: bool,
+) -> Result<(TokenIter, TokenStream), ()> {
+    // Repeat query steps until scope exhaustion.
+
+    //query_step(caravan, package, exit_rule, is_nested, entity_clause)
+    todo!()
+}
+
 pub(crate) fn collect_individual_bindings(bindings_clause: Vec<TokenTree>) -> Result<Vec<TokenStream>, ()> {
     let caravan = bindings_clause.into_iter();
     let caravan = TokenStream::from_iter(caravan).into_iter();

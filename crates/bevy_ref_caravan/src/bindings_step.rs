@@ -8,7 +8,7 @@ use crate::{
     exit_rule_override_step::exit_rule_override_step, 
     query_step::QueryMutation, 
     syntax_in::*,
-    collect_individual_bindings::collect_individual_bindings,
+    into_next::collect_individual_bindings,
 };
 
 enum BindingsNext {
@@ -86,7 +86,7 @@ pub(crate) fn bindings_step(
 }
 
 fn collect_until_bindings_end(
-    mut caravan: TokenIter, 
+    mut caravan: TokenIter,
     mut output: Vec<TokenTree>,
     is_nested: bool,
 ) -> Result<(TokenIter, Vec<TokenTree>, BindingsNext), ()> {

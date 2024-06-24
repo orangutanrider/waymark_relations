@@ -2,7 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    collect_individual_bindings::collect_individual_bindings,
+    into_next::collect_individual_bindings,
     common::collect_until_punct::*,
     construction_step::construction_step,
     entity_step::{entity_step_entrance, EntityWildcard},
@@ -94,7 +94,7 @@ pub(crate) fn exit_rule_override_step(
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
-            
+
             let Some(current) = caravan.next() else {
                 return Err(())
             };
