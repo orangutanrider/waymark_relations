@@ -75,13 +75,6 @@ pub(crate) fn exit_rule_override_step(
     };
 
     match next {
-        OverrideNext::Next => {
-            let Some(current) = caravan.next() else {
-                return Err(())
-            };
-
-            return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
-        },
         OverrideNext::Escape => {
             if !is_nested {
                 return Ok((caravan, package))
@@ -93,8 +86,17 @@ pub(crate) fn exit_rule_override_step(
 
             return entity_step_entrance(caravan, package, exit_rule, is_nested, false, current);
         },
-        OverrideNext::IntoNext => todo!(),
-        
+        OverrideNext::Next => {
+            let Some(current) = caravan.next() else {
+                return Err(())
+            };
+
+            return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
+        },
+        OverrideNext::IntoNext => {
+            
+            todo!()
+        },
     }
 }
 

@@ -38,18 +38,6 @@ pub(crate) fn bindings_step(
 
     match next {
         BindingsNext::ExitRuleOverride => return exit_rule_override_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause, bindings_clause, contains_mut),
-        BindingsNext::Next => {
-            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            let Some(current) = caravan.next() else {
-                return Err(())
-            };
-
-            return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
-        },
         BindingsNext::Escape => {
             let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
@@ -66,8 +54,26 @@ pub(crate) fn bindings_step(
 
             return entity_step_entrance(caravan, package, exit_rule, true, false, current);
         },
-        BindingsNext::IntoNext => todo!(),
-        
+        BindingsNext::Next => {
+            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            let Some(current) = caravan.next() else {
+                return Err(())
+            };
+
+            return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
+        },
+        BindingsNext::IntoNext => {
+            // Collect individual binding clauses as a post-processing step on the bindings clause.
+            // Continue into query steps, feeding in individual bindings, until scope is exhausted.
+
+
+            
+            todo!()
+        },
     }
 }
 
