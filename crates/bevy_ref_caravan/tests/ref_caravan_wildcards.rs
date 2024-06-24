@@ -17,7 +17,7 @@ fn de_ref_literal_ref_caravan() {
     assert_ref_caravan!((
         *entity :: oranges_q = oranges
     ) (
-        let entity = *entity;
+        let entity = * entity;
         let Ok(oranges) = oranges_q.get(entity) else {
             continue;
         };
