@@ -8,6 +8,7 @@ use crate::syntax_in::*;
 
 enum OverrideNext {
     Next,
+    IntoNext,
     Escape,
 }
 
@@ -92,6 +93,8 @@ pub(crate) fn exit_rule_override_step(
 
             return entity_step_entrance(caravan, package, exit_rule, is_nested, false, current);
         },
+        OverrideNext::IntoNext => todo!(),
+        
     }
 }
 
@@ -176,7 +179,7 @@ fn collect_until_override_end(
         // match_one_punct_combo ill-suited function, inefficient computation.
         let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
         match results {
-            PunctMatch::Matching => return Ok((caravan, output, OverrideNext::Next)),
+            PunctMatch::Matching => return Ok((caravan, output, OverrideNext::IntoNext)),
             _ => {
                 return collect_until_override_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
             },

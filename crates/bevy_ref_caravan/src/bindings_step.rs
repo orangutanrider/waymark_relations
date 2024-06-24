@@ -8,10 +8,11 @@ use crate::{
 enum BindingsNext {
     ExitRuleOverride,
     Next,
+    IntoNext,
     Escape,
 }
 
-pub(crate) fn  bindings_step(
+pub(crate) fn bindings_step(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
@@ -65,6 +66,8 @@ pub(crate) fn  bindings_step(
 
             return entity_step_entrance(caravan, package, exit_rule, true, false, current);
         },
+        BindingsNext::IntoNext => todo!(),
+        
     }
 }
 
@@ -117,7 +120,7 @@ fn collect_until_bindings_end(
         // match_one_punct_combo ill-suited function, inefficient computation.
         let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
         match results {
-            PunctMatch::Matching => return Ok((caravan, output, BindingsNext::Next)),
+            PunctMatch::Matching => return Ok((caravan, output, BindingsNext::IntoNext)),
             _ => {
                 return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
             },
