@@ -49,13 +49,6 @@ pub(crate) fn construction_step(
         return Err(())
     }; 
 
-    // let Ok(entity_go) = TokenStream::from_str(TO_ENTITY_FN) else { // Direct  
-    //     return Err(())
-    // };
-    // entity_clause.extend(entity_go);
-    // let entity_clause = Group::new(Delimiter::Parenthesis, entity_clause);
-    // let entity_clause = TokenStream::from_str(&entity_clause.to_string());
-
     let Ok(else_token) = TokenStream::from_str("else") else {
         return Err(())
     };
@@ -83,12 +76,9 @@ pub(crate) fn construction_step(
             (None, entity_clause)
         },
         EntityWildcard::DeRefLiteral => {
-            let Ok(mut de_ref) = TokenStream::from_str("*") else {
-                return Err(())
-            };
-            de_ref.extend(entity_clause);
-            
-            (None, de_ref)
+            let entity_binding = create_de_ref_literal_binding(entity_clause.clone());
+
+            (Some(entity_binding), entity_clause)
         },
         EntityWildcard::Overlap => {
             let Ok(entity_binding) = create_overlap_entity_binding(entity_clause.clone()) else {
@@ -139,6 +129,40 @@ pub(crate) fn construction_step(
     package.extend(assembly);
 
     return Ok(package);
+}
+
+fn create_de_ref_literal_binding(
+    entity_clause: TokenStream,
+) -> TokenStream {
+    // Create tokens
+    let Ok(let_token) = TokenStream::from_str("let") else {
+        panic!("Unexpected lex error in create_de_ref_literal_binding.")
+    };
+
+    let Ok(eq_token) = TokenStream::from_str("=") else {
+        panic!("Unexpected lex error in create_de_ref_literal_binding.")
+    };
+
+    let Ok(de_ref_token) = TokenStream::from_str("*") else {
+        panic!("Unexpected lex error in create_de_ref_literal_binding.")
+    };
+
+    let entity_data = entity_clause.clone();
+
+    let Ok(end_token) = TokenStream::from_str(";") else {
+        panic!("Unexpected lex error in create_de_ref_literal_binding.")
+    };
+
+    // Assemble tokens
+    let mut assembly = TokenStream::new();
+    assembly.extend(let_token);
+    assembly.extend(entity_clause);
+    assembly.extend(eq_token);
+    assembly.extend(de_ref_token);
+    assembly.extend(entity_data);
+    assembly.extend(end_token);
+
+    return assembly
 }
 
 fn create_overlap_entity_binding(
