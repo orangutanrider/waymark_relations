@@ -2,7 +2,13 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::*, exit_rule_override_step::exit_rule_override_step, query_step::QueryMutation, syntax_in::*
+    common::{collect_until_punct::*, *}, 
+    construction_step::construction_step, 
+    entity_step::*, 
+    exit_rule_override_step::exit_rule_override_step, 
+    query_step::QueryMutation, 
+    syntax_in::*,
+    collect_individual_bindings::collect_individual_bindings,
 };
 
 enum BindingsNext {
@@ -68,10 +74,12 @@ pub(crate) fn bindings_step(
         },
         BindingsNext::IntoNext => {
             // Collect individual binding clauses as a post-processing step on the bindings clause.
+            let indv_bindings = match collect_individual_bindings(bindings_clause) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
             // Continue into query steps, feeding in individual bindings, until scope is exhausted.
-
-
-            
             todo!()
         },
     }
