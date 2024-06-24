@@ -60,7 +60,7 @@ pub(crate) fn exit_rule_override_step(
                     exit_rule[0] = TokenTree::Ident(Ident::new("return", exit_rule_0.span()));
                 }
             },
-            None => { /* Do nothing */},
+            None => {/* Do nothing */},
         };
 
             let exit_rule = TokenStream::from_iter(exit_rule.into_iter());
