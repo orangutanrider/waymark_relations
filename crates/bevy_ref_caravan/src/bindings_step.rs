@@ -2,16 +2,24 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::*, exit_rule_override_step::exit_rule_override_step, query_step::QueryMutation, syntax_in::*
+    common::{collect_until_punct::*, *}, 
+    construction_step::construction_step, 
+    entity_step::*, 
+    exit_rule_override_step::exit_rule_override_step, 
+    query_step::QueryMutation, 
+    syntax_in::*,
+    into_next::*,
+    wildcard_step::EntityWildcard,
 };
 
 enum BindingsNext {
     ExitRuleOverride,
+    Next,
     IntoNext,
     Escape,
 }
 
-pub(crate) fn  bindings_step(
+pub(crate) fn bindings_step(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
@@ -37,7 +45,15 @@ pub(crate) fn  bindings_step(
 
     match next {
         BindingsNext::ExitRuleOverride => return exit_rule_override_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause, bindings_clause, contains_mut),
-        BindingsNext::IntoNext => {
+        BindingsNext::Escape => {
+            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            return Ok((caravan, package));
+        },
+        BindingsNext::Next => {
             let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
@@ -49,27 +65,26 @@ pub(crate) fn  bindings_step(
 
             return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
         },
-        BindingsNext::Escape => {
-            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+        BindingsNext::IntoNext => {
+            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
 
-            if !is_nested {
-                return Ok((caravan, package))
-            }
-
-            let Some(current) = caravan.next() else {
-                return Ok((caravan, package))
+            // Collect individual binding clauses as a post-processing step on the bindings clause.
+            let indv_bindings = match collect_individual_bindings(bindings_clause) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
 
-            return entity_step_entrance(caravan, package, exit_rule, true, false, current);
+            // Continue into query steps, feeding in individual bindings, until scope is exhausted.
+            return into_next_step_entrance(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
         },
     }
 }
 
 fn collect_until_bindings_end(
-    mut caravan: TokenIter, 
+    mut caravan: TokenIter,
     mut output: Vec<TokenTree>,
     is_nested: bool,
 ) -> Result<(TokenIter, Vec<TokenTree>, BindingsNext), ()> {
@@ -91,7 +106,7 @@ fn collect_until_bindings_end(
     // Is valid singular token?
     match is_nested {
         true => {
-            if token == NEXT { // For nested the NEXT symbol is valid.
+            if token == SCOPED_BREAK { // For nested the NEXT symbol is valid.
                 return Ok((caravan, output, BindingsNext::Escape))
             }
         },
@@ -102,12 +117,29 @@ fn collect_until_bindings_end(
         },
     }
 
-    // Is INTO_NEXT punct combo?
-    let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
-    match results {
-        PunctMatch::Matching => return Ok((caravan, output, BindingsNext::IntoNext)),
-        _ => {
-            return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
-        },
+
+    if token == NEXT_BANG { 
+        // match_one_punct_combo ill-suited function, inefficient computation.
+        let (results, caravan, output) = match_one_punct_combo(NEXT.iter(), caravan, token, output);
+        match results {
+            PunctMatch::Matching => return Ok((caravan, output, BindingsNext::Next)),
+            _ => {
+                return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
+            },
+        }
+    }
+    else if token == INTO_BANG { 
+        // match_one_punct_combo ill-suited function, inefficient computation.
+        let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
+        match results {
+            PunctMatch::Matching => return Ok((caravan, output, BindingsNext::IntoNext)),
+            _ => {
+                return collect_until_bindings_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
+            },
+        }
+    }
+    else {
+        output.push(TokenTree::Punct(token));
+        return collect_until_bindings_end(caravan, output, is_nested)
     }
 }

@@ -7,6 +7,9 @@ mod syntax_out; use syntax_out::exit_rule_default;
 mod root_step; use root_step::root_step;
 mod exit_rule_step;
 mod entity_step;
+mod wildcard_step;
+mod into_next;
+mod nesting_exit;
 mod query_step;
 mod bindings_step;
 mod exit_rule_override_step;
@@ -14,6 +17,7 @@ mod construction_step;
 
 use proc_macro::*;
 // use proc_macro::token_stream::IntoIter as TokenIter;
+use std::str::FromStr;
 
 #[proc_macro]
 pub fn ref_caravan(input: TokenStream) -> TokenStream {
@@ -63,11 +67,38 @@ pub fn assert_ref_caravan(input: TokenStream) -> TokenStream {
             return TokenStream::new() // Succesful assertion
         },
         false => {
-            return panic_stream("") // The assertion doesn't match
+            return assertion_panic(macro_group, expansion_group) // The assertion doesn't match
         },
     }
 }
 
+fn assertion_panic(macro_group: String, expansion_group: String) -> TokenStream {
+    // Create strings
+    let macro_stringify = "let macro_group = stringify!(".to_owned() + &macro_group + ");";
+    let expansion_stringify = "let expansion_group = stringify!(".to_owned() + &expansion_group + ");";
+    let panic = "panic!(\"Expected expansion did not match the assertion. \\n    macro_expansion: \\n{} \\n    asserted_expansion: \\n{}\", macro_group, expansion_group);";
+
+    // Create token streams
+    let Ok(macro_stringify) = TokenStream::from_str(&macro_stringify) else {
+        panic!("Unexpected lex error inside assertion_panic, when converting macro_stringify to token stream.")
+    };
+    let Ok(expansion_stringify) = TokenStream::from_str(&expansion_stringify) else {
+        panic!("Unexpected lex error inside assertion_panic, when converting expansion_stringify to token stream.")
+    };
+    let Ok(panic) = TokenStream::from_str(panic) else {
+        panic!("Unexpected lex error inside assertion_panic, when converting panic to token stream.")
+    };
+
+    // Assemble tokens
+    let mut assembly = TokenStream::new();
+    assembly.extend(macro_stringify);
+    assembly.extend(expansion_stringify);
+    assembly.extend(panic);
+
+    return assembly;
+}
+
+/* 
 /// Insertion vulnerable. Input message is flanked by " ", if the input message contains quotes, then it must also contain extra \ to flag those quotes.
 #[cfg(all(debug_assertions, not(feature = "no_assertions")))]
 fn panic_stream(msg_insert: &str) -> TokenStream {
@@ -78,3 +109,4 @@ fn panic_stream(msg_insert: &str) -> TokenStream {
 
     return stream;
 }
+*/

@@ -1,11 +1,12 @@
 mod exit_step; use exit_step::*;
-mod wildcard_step; use wildcard_step::*;
 mod nested_step; use nested_step::*;
 
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER;
+use crate::nesting_exit::nesting_exit;
+use crate::wildcard_step::*;
 
 pub(crate) fn entity_step_entrance(
     mut caravan: TokenIter, 
@@ -13,13 +14,13 @@ pub(crate) fn entity_step_entrance(
     exit_rule: &TokenStream,
     is_nested: bool,
 
-    is_into_next: bool, // If this step was proceeded by an INTO_NEXT combo, then nesting is allowed.
+    followed: bool, // If this step was proceeded by a NEXT combo, then nesting is allowed.
     current: TokenTree,
 ) -> Result<(TokenIter, TokenStream), ()> {
     match current {
         // Into nested entity step
         TokenTree::Group(group) => {
-            match is_into_next {
+            match followed {
                 true => { /* Proceed */ },
                 false => return Err(()),
             }
@@ -34,7 +35,7 @@ pub(crate) fn entity_step_entrance(
                 Err(err) => return Err(err),
             };
 
-            return nested_entity_step_exit(caravan, package, exit_rule, is_nested);
+            return nesting_exit(caravan, package, is_nested);
         },
         // Into single entity step
         TokenTree::Ident(_) => {
@@ -58,12 +59,4 @@ pub(crate) fn entity_step_entrance(
             return Err(())
         },
     }
-}
-
-pub(crate) enum EntityWildcard {
-    Direct,
-    Literal,
-    DeRefLiteral,
-    Overlap,
-    Lifted,
 }

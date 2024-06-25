@@ -4,7 +4,7 @@ use bevy_ref_caravan::*;
 #[test]
 fn nested_ref_caravan() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (to_oranges, to_apples) => {
+        to_hub :: hub_q = (to_oranges, to_apples) -> {
             to_oranges :: oranges_q = oranges,
             to_apples :: apples_q = apples,
         }
@@ -24,7 +24,7 @@ fn nested_ref_caravan() {
 #[test]
 fn mut_nested_caravan() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (to_oranges, to_apples) => {
+        to_hub :: hub_q = (to_oranges, to_apples) -> {
             to_oranges :: oranges_q = mut oranges,
             to_apples :: apples_q = apples,
         }
@@ -45,12 +45,12 @@ fn mut_nested_caravan() {
 #[test]
 fn double_nested_ref_caravan() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (to_vegtables, to_fruits) => {
-            to_vegtables :: vegtables_q = (to_carrots, to_onions) => {
+        to_hub :: hub_q = (to_vegtables, to_fruits) -> {
+            to_vegtables :: vegtables_q = (to_carrots, to_onions) -> {
                 to_carrots :: carrots_q = carrots,
                 to_onions :: onions_q = onions,
             },
-            to_fruits :: fruits_q = (to_oranges, to_apples) => {
+            to_fruits :: fruits_q = (to_oranges, to_apples) -> {
                 to_oranges :: oranges_q = oranges,
                 to_apples :: apples_q = apples,
             },
@@ -96,7 +96,7 @@ fn semi_colon_into_scope() {
 #[test]
 fn nested_comma_into_scope() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (to_vegtables, to_fruits) => {
+        to_hub :: hub_q = (to_vegtables, to_fruits) -> {
             to_vegtables :: vegtables_q = (to_carrots, to_onions), { 
                 to_carrots :: carrots_q = carrots,
                 to_onions :: onions_q = onions,
@@ -115,7 +115,7 @@ fn nested_comma_into_scope() {
 fn immediate_nested_scope() {
     assert_ref_caravan!((
         {
-            to_hub :: hub_q = (to_oranges, to_apples) => {
+            to_hub :: hub_q = (to_oranges, to_apples) -> {
                 to_oranges :: oranges_q = oranges,
                 to_apples :: apples_q = apples,
             }
@@ -128,11 +128,11 @@ fn immediate_nested_scope() {
 #[test]
 fn diamond_ref_caravan() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (to_oranges, to_apples, to_carrots) => {
+        to_hub :: hub_q = (to_oranges, to_apples, to_carrots) -> {
             to_oranges :: oranges_q = oranges,
             to_apples :: apples_q = apples,
             to_carrots :: carrots_q = to_onions,
-        } => to_onions :: onions_q = onions;
+        } -> to_onions :: onions_q = onions;
     ) (
         compile_error!("Undefined")
     )); 

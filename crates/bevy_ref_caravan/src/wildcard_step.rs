@@ -1,15 +1,21 @@
 use proc_macro::*;
 use crate::syntax_in::{DIRECT, LITERAL, DE_REF_LITERAL, OVERLAP, LIFT};
-use super::*;
 
-pub(super) fn wildcard_step(
+pub(crate) enum EntityWildcard {
+    Direct,
+    Literal,
+    DeRefLiteral,
+    Overlap,
+    Lifted,
+}
+
+pub(crate) fn wildcard_step(
     current: Punct, 
 ) -> Result<EntityWildcard, ()> {
     match punct_to_wildcard(&current) {
         Some(kind) => return Ok(kind),
         None => return Err(()),
     }
-
 }
 
 fn punct_to_wildcard(

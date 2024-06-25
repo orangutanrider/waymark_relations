@@ -46,7 +46,7 @@ fn override_declared_ref_caravan() {
 #[test]
 fn override_into_nested_ref_caravan() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (to_oranges, to_apples) ? return => {
+        to_hub :: hub_q = (to_oranges, to_apples) ? return -> {
             to_oranges :: oranges_q = oranges,
             to_apples :: apples_q = apples,
         }
@@ -66,7 +66,7 @@ fn override_into_nested_ref_caravan() {
 #[test]
 fn override_single_nested_ref_caravan() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (to_oranges, to_apples) ? return => {
+        to_hub :: hub_q = (to_oranges, to_apples) ? return -> {
             to_oranges :: oranges_q = oranges,
             to_apples :: apples_q = apples ? foobar,
         }
@@ -86,7 +86,7 @@ fn override_single_nested_ref_caravan() {
 #[test]
 fn override_scoped_nested_ref_caravan() {
     assert_ref_caravan!((
-        to_hub :: hub_q = (to_oranges, to_apples) ? return => {
+        to_hub :: hub_q = (to_oranges, to_apples) ? return -> {
             to_oranges :: oranges_q = oranges,
             to_apples :: apples_q = apples ? { foo = bar + 1; return; },
         }

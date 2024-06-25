@@ -19,12 +19,16 @@ pub(super) fn entity_step_exit(
     wildcard: EntityWildcard, 
 ) -> Result<(TokenIter, TokenStream), ()> {
     let result = collect_entity_clause(caravan, current);
-    let (caravan, entity_clause) = match result {
+    let (mut caravan, entity_clause) = match result {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
-    return query_step(caravan, package, exit_rule, is_nested, (wildcard, entity_clause));
+    let Some(current) = caravan.next() else {
+        return Err(())
+    };
+
+    return query_step(current, caravan, package, exit_rule, is_nested, (wildcard, entity_clause));
 }
 
 fn collect_entity_clause(

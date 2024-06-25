@@ -1,12 +1,17 @@
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
-use crate::common::collect_until_punct::*;
-use crate::construction_step::construction_step;
-use crate::entity_step::{entity_step_entrance, EntityWildcard};
-use crate::syntax_in::{ABBREVIATED_RETURN, EXIT_RULE_DELIMITER, INTO_NEXT, LINE_BREAK, NEXT};
+use crate::{
+    into_next::*,
+    common::collect_until_punct::*,
+    construction_step::construction_step,
+    entity_step::entity_step_entrance,
+    wildcard_step::EntityWildcard,
+    syntax_in::*
+};
 
 enum OverrideNext {
+    Next,
     IntoNext,
     Escape,
 }
@@ -59,7 +64,7 @@ pub(crate) fn exit_rule_override_step(
                     exit_rule[0] = TokenTree::Ident(Ident::new("return", exit_rule_0.span()));
                 }
             },
-            None => { /* Do nothing */},
+            None => {/* Do nothing */},
         };
 
             let exit_rule = TokenStream::from_iter(exit_rule.into_iter());
@@ -68,29 +73,41 @@ pub(crate) fn exit_rule_override_step(
         }
     };
 
-    let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
-        Ok(ok) => ok,
-        Err(err) => return Err(err),
-    };
-
     match next {
-        OverrideNext::IntoNext => {
+        OverrideNext::Escape => {
+            let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            return Ok((caravan, package))
+        },
+        OverrideNext::Next => {
+            let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
             let Some(current) = caravan.next() else {
                 return Err(())
             };
 
             return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
         },
-        OverrideNext::Escape => {
-            if !is_nested {
-                return Ok((caravan, package))
-            }
-
-            let Some(current) = caravan.next() else {
-                return Ok((caravan, package))
+        OverrideNext::IntoNext => {
+            let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
             };
 
-            return entity_step_entrance(caravan, package, exit_rule, is_nested, false, current);
+            // Collect individual binding clauses as a post-processing step on the bindings clause.
+            let indv_bindings = match collect_individual_bindings(bindings_clause) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            // Continue into query steps, feeding in individual bindings, until scope is exhausted.
+            return into_next_step_entrance(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
         },
     }
 }
@@ -111,7 +128,7 @@ fn validate_override_end(
     // Is valid singular token?
     match is_nested {
         true => {
-            if token == NEXT { // For nested the NEXT symbol is valid.
+            if token == SCOPED_BREAK { // For nested the NEXT symbol is valid.
                 return Ok((caravan, OverrideNext::Escape))
             }
         },
@@ -123,9 +140,9 @@ fn validate_override_end(
     }
 
     // Is INTO_NEXT punct combo?
-    let (results, caravan, _) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, Vec::new());
+    let (results, caravan, _) = match_one_punct_combo(NEXT.iter(), caravan, token, Vec::new());
     match results {
-        PunctMatch::Matching => return Ok((caravan, OverrideNext::IntoNext)),
+        PunctMatch::Matching => return Ok((caravan, OverrideNext::Next)),
         _ => {
             return Err(())
         },
@@ -151,7 +168,7 @@ fn collect_until_override_end(
     // Is valid singular token?
     match is_nested {
         true => {
-            if token == NEXT { // For nested the NEXT symbol is valid.
+            if token == SCOPED_BREAK { // For nested the NEXT symbol is valid.
                 return Ok((caravan, output, OverrideNext::Escape))
             }
         },
@@ -162,12 +179,28 @@ fn collect_until_override_end(
         },
     }
 
-    // Is INTO_NEXT punct combo?
-    let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
-    match results {
-        PunctMatch::Matching => return Ok((caravan, output, OverrideNext::IntoNext)),
-        _ => {
-            return collect_until_override_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
-        },
+    if token == NEXT_BANG { 
+        // match_one_punct_combo ill-suited function, inefficient computation.
+        let (results, caravan, output) = match_one_punct_combo(NEXT.iter(), caravan, token, output);
+        match results {
+            PunctMatch::Matching => return Ok((caravan, output, OverrideNext::Next)),
+            _ => {
+                return collect_until_override_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
+            },
+        }
+    }
+    else if token == INTO_BANG { 
+        // match_one_punct_combo ill-suited function, inefficient computation.
+        let (results, caravan, output) = match_one_punct_combo(INTO_NEXT.iter(), caravan, token, output);
+        match results {
+            PunctMatch::Matching => return Ok((caravan, output, OverrideNext::IntoNext)),
+            _ => {
+                return collect_until_override_end(caravan, output, is_nested) // If not, continue. (token is already added to output because of match_one_punct_combo).
+            },
+        }
+    }
+    else {
+        output.push(TokenTree::Punct(token));
+        return collect_until_override_end(caravan, output, is_nested)
     }
 }
