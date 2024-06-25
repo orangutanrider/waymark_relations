@@ -6,7 +6,8 @@ use crate::{
     common::collect_until_punct::*,
     construction_step::construction_step,
     entity_step::{entity_step_entrance, EntityWildcard},
-    syntax_in::*
+    syntax_in::*,
+    collect_indv_bindings::collect_individual_bindings,
 };
 
 enum OverrideNext {
