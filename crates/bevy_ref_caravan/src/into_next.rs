@@ -7,7 +7,7 @@ use crate::query_step::query_step;
 use crate::syntax_in::*;
 use crate::nesting_exit::nesting_exit;
 
-pub(crate) fn into_next_step(
+pub(crate) fn into_next_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
@@ -43,18 +43,18 @@ pub(crate) fn into_next_step(
                 return Err(())
             };
 
-            let Some(entity_clause) = bindings.next() else {
+            let Some(indv_binding) = bindings.next() else {
                 return Err(())
             };
 
-            return query_step(current, caravan, package, exit_rule, is_nested, (wildcard, entity_clause));
+            return query_step(current, caravan, package, exit_rule, is_nested, (wildcard, indv_binding));
         },
         _ => {
-            let Some(entity_clause) = bindings.next() else {
+            let Some(indv_binding) = bindings.next() else {
                 return Err(())
             };
 
-            return query_step(current, caravan, package, exit_rule, is_nested, (EntityWildcard::Direct, entity_clause));
+            return query_step(current, caravan, package, exit_rule, is_nested, (EntityWildcard::Direct, indv_binding));
         }, 
     }
 }
@@ -67,19 +67,47 @@ fn nested_into_next_step_entrance(
     mut bindings: IntoIter<Vec<TokenTree>>,
 ) -> Result<(TokenIter, TokenStream), ()> {
     let Some(current) = caravan.next() else {
-        return Ok((caravan, package))
+        return Ok((caravan, package));
     };
 
-    let Some(entity_clause) = bindings.next() else {
+    let Some(indv_binding) = bindings.next() else {
         return Err(())
     };
 
-    let (caravan, package) = match query_step(current, caravan, package, exit_rule, true, (EntityWildcard::Direct, entity_clause)) {
+    let (caravan, package) = match nested_into_next_step(caravan, package, exit_rule, current, indv_binding) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
     return nested_into_next_step_entrance(caravan, package, exit_rule, bindings);
+}
+
+fn nested_into_next_step(
+    mut caravan: TokenIter, 
+    package: TokenStream,
+    exit_rule: &TokenStream,
+
+    current: TokenTree,
+    indv_binding: Vec<TokenTree>,
+) -> Result<(TokenIter, TokenStream), ()> {
+    let mut wildcard = EntityWildcard::Direct;
+    let current = match current {
+        TokenTree::Punct(punct) => {
+            wildcard = match wildcard_step(punct) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            let Some(current) = caravan.next() else {
+                return Err(())
+            };
+
+            current
+        },
+        _ => { current }
+    };
+
+    return query_step(current, caravan, package, exit_rule, true, (wildcard, indv_binding));
 }
 
 pub(crate) fn collect_individual_bindings(bindings_clause: Vec<TokenTree>) -> Result<Vec<Vec<TokenTree>>, ()> {

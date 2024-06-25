@@ -78,7 +78,7 @@ pub(crate) fn bindings_step(
             };
 
             // Continue into query steps, feeding in individual bindings, until scope is exhausted.
-            return into_next_step(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
+            return into_next_step_entrance(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
         },
     }
 }
