@@ -63,3 +63,41 @@ fn wildcards_into_next_ref_caravan() {
         };
     ));
 }
+
+#[test]
+fn double_nested_into_next_ref_caravan() {
+    assert_ref_caravan!((
+        to_hub :: hub_q = (to_vegtables, to_fruits) => {
+            vegtables_q = (to_carrots, to_onions) => {
+                carrots_q = carrots,
+                onions_q = onions,
+            },
+            fruits_q = (to_oranges, to_apples) => {
+                oranges_q = oranges,
+                apples_q = apples,
+            },
+        }
+    ) (
+        let Ok((to_vegtables, to_fruits)) = hub_q.get(to_hub.go()) else {
+            continue;
+        };
+        let Ok((to_carrots, to_onions)) = vegtables_q.get(to_vegtables.go()) else {
+            continue;
+        };
+        let Ok(carrots) = carrots_q.get(to_carrots.go()) else {
+            continue;
+        };
+        let Ok(onions) = onions_q.get(to_onions.go()) else {
+            continue;
+        };
+        let Ok((to_oranges, to_apples)) = fruits_q.get(to_fruits.go()) else {
+            continue;
+        };
+        let Ok(oranges) = oranges_q.get(to_oranges.go()) else {
+            continue;
+        };
+        let Ok(apples) = apples_q.get(to_apples.go()) else {
+            continue;
+        };
+    ));
+}
