@@ -33,6 +33,22 @@ pub(crate) fn into_next_step(
 
             return nesting_exit(caravan, package, is_nested);
         },
+        TokenTree::Punct(current) => {
+            let wildcard = match wildcard_step(current) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            let Some(current) = caravan.next() else {
+                return Err(())
+            };
+
+            let Some(entity_clause) = bindings.next() else {
+                return Err(())
+            };
+
+            return query_step(current, caravan, package, exit_rule, is_nested, (wildcard, entity_clause));
+        },
         _ => {
             let Some(entity_clause) = bindings.next() else {
                 return Err(())
