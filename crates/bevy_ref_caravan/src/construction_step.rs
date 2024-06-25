@@ -5,7 +5,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
     common::*, 
-    entity_step::EntityWildcard, 
+    wildcard_step::EntityWildcard,
     syntax_out::*
 };
 

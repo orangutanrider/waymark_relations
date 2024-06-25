@@ -5,7 +5,8 @@ use crate::{
     into_next::*,
     common::collect_until_punct::*,
     construction_step::construction_step,
-    entity_step::{entity_step_entrance, EntityWildcard},
+    entity_step::entity_step_entrance,
+    wildcard_step::EntityWildcard,
     syntax_in::*
 };
 

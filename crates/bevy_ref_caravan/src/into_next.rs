@@ -2,7 +2,7 @@ use std::vec::IntoIter;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
-use crate::entity_step::EntityWildcard;
+use crate::wildcard_step::*;
 use crate::query_step::query_step;
 use crate::syntax_in::*;
 use crate::nesting_exit::nesting_exit;

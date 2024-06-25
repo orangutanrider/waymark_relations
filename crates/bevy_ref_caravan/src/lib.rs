@@ -7,6 +7,7 @@ mod syntax_out; use syntax_out::exit_rule_default;
 mod root_step; use root_step::root_step;
 mod exit_rule_step;
 mod entity_step;
+mod wildcard_step;
 mod into_next;
 mod nesting_exit;
 mod query_step;

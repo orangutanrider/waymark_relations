@@ -9,6 +9,7 @@ use crate::{
     query_step::QueryMutation, 
     syntax_in::*,
     into_next::*,
+    wildcard_step::EntityWildcard,
 };
 
 enum BindingsNext {

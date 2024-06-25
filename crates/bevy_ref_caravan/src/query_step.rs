@@ -2,7 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    entity_step::EntityWildcard,
+    wildcard_step::EntityWildcard,
     bindings_step::bindings_step, 
     common::collect_until_punct::*, 
     syntax_in::*
