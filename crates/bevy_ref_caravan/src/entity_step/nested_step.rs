@@ -14,10 +14,15 @@ pub(super) fn nested_entity_step_entrance(
         return Ok((caravan, package)) // End of iterator
     };
 
-    return entity_step_entrance(caravan, package, exit_rule, true, false, token)
+    let (caravan, package) = match entity_step_entrance(caravan, package, exit_rule, true, false, token) {
+        Ok(ok) => ok,
+        Err(err) => return Err(err),
+    };
+
+    return nested_entity_step_entrance(caravan, package, exit_rule)
 }
 
-/// This is supposed to come after the end of the scope
+/// This comes after the end of the scope
 pub(super) fn nested_entity_step_exit(
     mut caravan: TokenIter, 
     package: TokenStream,

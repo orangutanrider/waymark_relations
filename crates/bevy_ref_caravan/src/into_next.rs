@@ -4,6 +4,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::entity_step::EntityWildcard;
 use crate::query_step::query_step;
+use crate::syntax_in::*;
 
 pub(crate) fn into_next_step(
     mut caravan: TokenIter, 
@@ -19,6 +20,12 @@ pub(crate) fn into_next_step(
 
     match current {
         TokenTree::Group(group) => {
+            if group.delimiter() != ENTIY_STEP_SCOPABLE_DELIMITER {
+                return Err(())
+            }
+
+            let nested_caravan: TokenIter = group.stream().into_iter();
+
             todo!()
         },
         _ => {

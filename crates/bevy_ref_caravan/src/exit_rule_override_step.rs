@@ -79,15 +79,7 @@ pub(crate) fn exit_rule_override_step(
                 Err(err) => return Err(err),
             };
 
-            if !is_nested {
-                return Ok((caravan, package))
-            }
-
-            let Some(current) = caravan.next() else {
-                return Ok((caravan, package))
-            };
-
-            return entity_step_entrance(caravan, package, exit_rule, is_nested, false, current);
+            return Ok((caravan, package))
         },
         OverrideNext::Next => {
             let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause, contains_mut) {

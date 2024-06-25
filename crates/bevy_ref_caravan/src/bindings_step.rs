@@ -50,15 +50,7 @@ pub(crate) fn bindings_step(
                 Err(err) => return Err(err),
             };
 
-            if !is_nested {
-                return Ok((caravan, package))
-            }
-
-            let Some(current) = caravan.next() else {
-                return Ok((caravan, package))
-            };
-
-            return entity_step_entrance(caravan, package, exit_rule, true, false, current);
+            return Ok((caravan, package));
         },
         BindingsNext::Next => {
             let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {

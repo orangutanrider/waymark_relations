@@ -13,13 +13,13 @@ pub(crate) fn entity_step_entrance(
     exit_rule: &TokenStream,
     is_nested: bool,
 
-    is_into_next: bool, // If this step was proceeded by an INTO_NEXT combo, then nesting is allowed.
+    followed: bool, // If this step was proceeded by a NEXT combo, then nesting is allowed.
     current: TokenTree,
 ) -> Result<(TokenIter, TokenStream), ()> {
     match current {
         // Into nested entity step
         TokenTree::Group(group) => {
-            match is_into_next {
+            match followed {
                 true => { /* Proceed */ },
                 false => return Err(()),
             }
