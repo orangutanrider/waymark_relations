@@ -15,7 +15,7 @@ fn basic_into_next_ref_caravan() {
 }
 
 #[test]
-fn nested_ref_caravan() {
+fn nested_into_next_ref_caravan() {
     assert_ref_caravan!((
         to_hub :: hub_q = (to_oranges, to_apples) => {
             oranges_q = oranges,

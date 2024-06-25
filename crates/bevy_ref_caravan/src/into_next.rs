@@ -26,7 +26,7 @@ pub(crate) fn into_next_step(
             }
 
             let nested_caravan: TokenIter = group.stream().into_iter();
-            let (_, package) = match nested_into_next_step_entrance(nested_caravan, package, exit_rule, is_nested, bindings) {
+            let (_, package) = match nested_into_next_step_entrance(nested_caravan, package, exit_rule, bindings) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -47,7 +47,6 @@ fn nested_into_next_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
-    is_nested: bool,
 
     mut bindings: IntoIter<Vec<TokenTree>>,
 ) -> Result<(TokenIter, TokenStream), ()> {
@@ -59,12 +58,12 @@ fn nested_into_next_step_entrance(
         return Err(())
     };
 
-    let (caravan, package) = match query_step(current, caravan, package, exit_rule, is_nested, (EntityWildcard::Direct, entity_clause)) {
+    let (caravan, package) = match query_step(current, caravan, package, exit_rule, true, (EntityWildcard::Direct, entity_clause)) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
-    return nested_into_next_step_entrance(caravan, package, exit_rule, is_nested, bindings);
+    return nested_into_next_step_entrance(caravan, package, exit_rule, bindings);
 }
 
 pub(crate) fn collect_individual_bindings(bindings_clause: Vec<TokenTree>) -> Result<Vec<Vec<TokenTree>>, ()> {
