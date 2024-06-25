@@ -6,6 +6,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER;
+use crate::nesting_exit::nesting_exit;
 
 pub(crate) fn entity_step_entrance(
     mut caravan: TokenIter, 
@@ -34,7 +35,7 @@ pub(crate) fn entity_step_entrance(
                 Err(err) => return Err(err),
             };
 
-            return nested_entity_step_exit(caravan, package, exit_rule, is_nested);
+            return nesting_exit(caravan, package, is_nested);
         },
         // Into single entity step
         TokenTree::Ident(_) => {
