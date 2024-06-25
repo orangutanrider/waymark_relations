@@ -50,7 +50,7 @@ fn mut_ref_caravan() {
 }
 
 #[test]
-fn into_next_ref_caravan() {
+fn next_ref_caravan() {
     assert_ref_caravan!((
         to_hub :: hub_q = to_oranges -> to_oranges :: oranges_q = oranges;
     ) (

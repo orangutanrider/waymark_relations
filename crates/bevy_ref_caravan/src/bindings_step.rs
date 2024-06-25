@@ -8,7 +8,7 @@ use crate::{
     exit_rule_override_step::exit_rule_override_step, 
     query_step::QueryMutation, 
     syntax_in::*,
-    into_next::collect_individual_bindings,
+    into_next::*,
 };
 
 enum BindingsNext {
@@ -73,6 +73,11 @@ pub(crate) fn bindings_step(
             return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
         },
         BindingsNext::IntoNext => {
+            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
             // Collect individual binding clauses as a post-processing step on the bindings clause.
             let indv_bindings = match collect_individual_bindings(bindings_clause) {
                 Ok(ok) => ok,
@@ -80,7 +85,7 @@ pub(crate) fn bindings_step(
             };
 
             // Continue into query steps, feeding in individual bindings, until scope is exhausted.
-            todo!()
+            return into_next_step(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
         },
     }
 }

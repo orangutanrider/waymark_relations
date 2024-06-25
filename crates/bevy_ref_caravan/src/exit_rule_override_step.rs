@@ -2,7 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    into_next::collect_individual_bindings,
+    into_next::*,
     common::collect_until_punct::*,
     construction_step::construction_step,
     entity_step::{entity_step_entrance, EntityWildcard},
@@ -102,6 +102,11 @@ pub(crate) fn exit_rule_override_step(
             return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
         },
         OverrideNext::IntoNext => {
+            let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
             // Collect individual binding clauses as a post-processing step on the bindings clause.
             let indv_bindings = match collect_individual_bindings(bindings_clause) {
                 Ok(ok) => ok,
@@ -109,7 +114,7 @@ pub(crate) fn exit_rule_override_step(
             };
 
             // Continue into query steps, feeding in individual bindings, until scope is exhausted.
-            todo!()
+            return into_next_step(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
         },
     }
 }

@@ -5,7 +5,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 use crate::entity_step::EntityWildcard;
 use crate::query_step::query_step;
 
-pub(crate) fn auto_fill_query_steps(
+pub(crate) fn into_next_step(
     mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &TokenStream,
