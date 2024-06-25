@@ -1,5 +1,4 @@
 mod common; use common::compile_error_stream;
-mod collect_indv_bindings;
 
 mod syntax_in; 
 mod syntax_out; use syntax_out::exit_rule_default;

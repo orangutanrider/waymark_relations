@@ -9,7 +9,6 @@ use crate::{
     query_step::QueryMutation, 
     syntax_in::*,
     into_next::*,
-    collect_indv_bindings::collect_individual_bindings,
 };
 
 enum BindingsNext {
