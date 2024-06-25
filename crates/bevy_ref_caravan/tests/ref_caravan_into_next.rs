@@ -33,3 +33,33 @@ fn nested_into_next_ref_caravan() {
         };
     ));
 }
+
+#[test]
+fn wildcards_into_next_ref_caravan() {
+    assert_ref_caravan!((
+        @hub :: hub_q = (to_oranges_entity, apples_entity, to_carrots, to_onions) => {
+            ^oranges_q = oranges,
+            ~apples_q = apples,
+            carrots_q = carrots,
+            |onions_q = onions,
+        }
+    ) (
+        let Ok((to_oranges_entity, apples_entity, to_carrots, to_onions)) = hub_q.get(hub) else {
+            continue;
+        };
+        let oranges_entity = to_oranges_entity.go();
+        let Ok(oranges) = oranges_q.get(oranges_entity) else {
+            continue;
+        };
+        let apples_entity = apples_entity.go();
+        let Ok(apples) = apples_q.get(apples_entity) else {
+            continue;
+        };
+        let Ok(carrots) = carrots_q.get(to_carrots.go()) else {
+            continue;
+        };
+        let Ok(onions) = onions_q.get(to_onions.go()) else {
+            continue;
+        };
+    ));
+}
