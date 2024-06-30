@@ -2,10 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    wildcard_step::EntityWildcard,
-    bindings_step::bindings_step, 
-    common::collect_until_punct::*, 
-    syntax_in::*
+    bindings_step::bindings_step, common::collect_until_punct::*, exit_rule_step::ExitRule, syntax_in::*, wildcard_step::EntityWildcard
 };
 
 pub(crate) enum QueryMutation {
@@ -18,7 +15,7 @@ pub(crate) fn query_step(
 
     caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>), 

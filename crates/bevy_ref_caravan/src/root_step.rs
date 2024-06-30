@@ -3,19 +3,18 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
     entity_step::entity_step_entrance,
-    exit_rule_step::exit_rule_step,
+    exit_rule_step::{exit_rule_step, ExitRule},
     syntax_in::EXIT_RULE_NOTATION,
 };
 
 pub(crate) fn root_step(
     mut caravan: TokenIter, 
     package: TokenStream,
-    mut exit_rule: TokenStream,
-) -> Result<(TokenIter, TokenStream, TokenStream), ()> {
+    mut exit_rule: ExitRule,
+) -> Result<(TokenIter, TokenStream, ExitRule), ()> {
     let Some(token) = caravan.next() else {
         return Ok((caravan, package, exit_rule))
     };
-
 
     match token {
         TokenTree::Ident(_) => {
@@ -29,8 +28,7 @@ pub(crate) fn root_step(
         TokenTree::Punct(punct) => {
             match punct == EXIT_RULE_NOTATION {
                 true => {
-                    exit_rule = TokenStream::new();
-
+                    exit_rule.wipe();
                     let caravan = match exit_rule_step(caravan, &mut exit_rule, punct.spacing()) {
                         Ok(ok) => ok,
                         Err(err) => return Err(err),

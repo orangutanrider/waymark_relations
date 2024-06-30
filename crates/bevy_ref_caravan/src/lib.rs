@@ -1,7 +1,8 @@
 mod common; use common::compile_error_stream;
 
 mod syntax_in; 
-mod syntax_out; use syntax_out::exit_rule_default;
+mod syntax_out; use exit_rule_step::ExitRule;
+use syntax_out::exit_rule_default;
 
 // Caravan.
 mod root_step; use root_step::root_step;
@@ -23,7 +24,7 @@ use std::str::FromStr;
 pub fn ref_caravan(input: TokenStream) -> TokenStream {
     let caravan = input.into_iter();
     let package = TokenStream::new();
-    let exit_rule = exit_rule_default();
+    let exit_rule = ExitRule::default();
     let (_, package, _) = match root_step(caravan, package, exit_rule) {
         Ok(ok) => ok,
         Err(err) => {

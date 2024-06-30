@@ -2,14 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::{collect_until_punct::*, *}, 
-    construction_step::construction_step, 
-    entity_step::*, 
-    exit_rule_override_step::exit_rule_override_step, 
-    query_step::QueryMutation, 
-    syntax_in::*,
-    into_next::*,
-    wildcard_step::EntityWildcard,
+    common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::*, exit_rule_override_step::exit_rule_override_step, exit_rule_step::ExitRule, into_next::*, query_step::QueryMutation, syntax_in::*, wildcard_step::EntityWildcard
 };
 
 enum BindingsNext {
@@ -22,7 +15,7 @@ enum BindingsNext {
 pub(crate) fn bindings_step(
     caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>), 

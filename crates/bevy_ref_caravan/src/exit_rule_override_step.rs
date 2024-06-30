@@ -2,12 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    into_next::*,
-    common::collect_until_punct::*,
-    construction_step::construction_step,
-    entity_step::entity_step_entrance,
-    wildcard_step::EntityWildcard,
-    syntax_in::*
+    common::collect_until_punct::*, construction_step::construction_step, entity_step::entity_step_entrance, exit_rule_step::ExitRule, into_next::*, syntax_in::*, wildcard_step::EntityWildcard
 };
 
 enum OverrideNext {
@@ -20,7 +15,7 @@ enum OverrideNext {
 pub(crate) fn exit_rule_override_step(
     mut caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>),
@@ -28,6 +23,8 @@ pub(crate) fn exit_rule_override_step(
     bindings_clause: Vec<TokenTree>,
     contains_mut: bool,
 ) -> Result<(TokenIter, TokenStream), ()> {
+    todo!()
+    /* 
     let Some(token) = caravan.next() else {
         return Err(())
     };
@@ -110,6 +107,7 @@ pub(crate) fn exit_rule_override_step(
             return into_next_step_entrance(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
         },
     }
+    */
 }
 
 fn validate_override_end(

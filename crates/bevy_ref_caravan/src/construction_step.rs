@@ -4,14 +4,12 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::*, 
-    wildcard_step::EntityWildcard,
-    syntax_out::*
+    common::*, exit_rule_step::ExitRule, syntax_out::*, wildcard_step::EntityWildcard
 };
 
 pub(crate) fn construction_step(
     mut package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>),
     query_clause: Vec<TokenTree>,
@@ -53,6 +51,7 @@ pub(crate) fn construction_step(
         return Err(())
     };
 
+    let exit_rule = exit_rule.statement.clone();
     let exit_rule = Group::new(Delimiter::Brace, exit_rule.clone());
     let Ok(exit_rule) = TokenStream::from_str(&exit_rule.to_string()) else {
         return Err(())
