@@ -31,7 +31,7 @@ pub(crate) fn root_step(
                 true => {
                     exit_rule = TokenStream::new();
 
-                    let caravan = match exit_rule_step(caravan, &mut exit_rule) {
+                    let caravan = match exit_rule_step(caravan, &mut exit_rule, punct.spacing()) {
                         Ok(ok) => ok,
                         Err(err) => return Err(err),
                     };
