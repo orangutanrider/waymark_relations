@@ -35,17 +35,12 @@ fn err_match_construction(
     let (wildcard, entity_clause) = entity_clause;
 
     // To streams
-    let mut entity_clause = TokenStream::from_iter(entity_clause.into_iter());
+    let entity_clause = TokenStream::from_iter(entity_clause.into_iter());
     let query_clause = TokenStream::from_iter(query_clause.into_iter());
     let bindings_clause = TokenStream::from_iter(bindings_clause.into_iter());
 
     // Create tokens
     let Ok(let_token) = TokenStream::from_str("let") else {
-        return Err(())
-    };
-
-    let bindings_clause = Group::new(Delimiter::Parenthesis, bindings_clause);
-    let Ok(bindings_clause) = TokenStream::from_str(&bindings_clause.to_string()) else {
         return Err(())
     };
 
@@ -75,7 +70,7 @@ fn err_match_construction(
     let Ok(exit_rule) = TokenStream::from_str(&exit_rule.to_string()) else {
         return Err(())
     };
-    let exit_rule_end_token = TokenStream::from_str(",") else {
+    let Ok(exit_rule_end_token) = TokenStream::from_str(",") else {
         return Err(())
     };
 
@@ -113,10 +108,10 @@ fn err_match_construction(
     assembly.extend(let_token);
     assembly.extend(bindings_clause);
     assembly.extend(eq_token);
+    assembly.extend(match_token);
     assembly.extend(query_clause);
     assembly.extend(get_token);
     assembly.extend(entity_clause);
-    assembly.extend(match_token);
     assembly.extend(match_block);
     assembly.extend(end_token);
 
