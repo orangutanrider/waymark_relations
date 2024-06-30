@@ -4,12 +4,131 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::*, exit_rule_step::ExitRule, syntax_out::*, wildcard_step::EntityWildcard
+    common::*, exit_rule_step::*, syntax_out::*, wildcard_step::EntityWildcard
 };
 
 pub(crate) fn construction_step(
-    mut package: TokenStream,
+    package: TokenStream,
     exit_rule: &ExitRule,
+
+    entity_clause: (EntityWildcard, Vec<TokenTree>),
+    query_clause: Vec<TokenTree>,
+    bindings_clause: Vec<TokenTree>,
+    contains_mut: bool,
+) -> Result<TokenStream, ()> {
+    match exit_rule.structure {
+        ExitStructure::IsErrMatch => return err_match_construction(package, &exit_rule.statement, entity_clause, query_clause, bindings_clause, contains_mut),
+        ExitStructure::IsLetElse => return let_else_construction(package, &exit_rule.statement, entity_clause, query_clause, bindings_clause, contains_mut),
+    }
+}
+
+fn err_match_construction(
+    mut package: TokenStream,
+    exit_rule: &TokenStream,
+
+    entity_clause: (EntityWildcard, Vec<TokenTree>),
+    query_clause: Vec<TokenTree>,
+    bindings_clause: Vec<TokenTree>,
+    contains_mut: bool,
+) -> Result<TokenStream, ()> {
+    // Unwrap entity clause
+    let (wildcard, entity_clause) = entity_clause;
+
+    // To streams
+    let mut entity_clause = TokenStream::from_iter(entity_clause.into_iter());
+    let query_clause = TokenStream::from_iter(query_clause.into_iter());
+    let bindings_clause = TokenStream::from_iter(bindings_clause.into_iter());
+
+    // Create tokens
+    let Ok(let_token) = TokenStream::from_str("let") else {
+        return Err(())
+    };
+
+    let bindings_clause = Group::new(Delimiter::Parenthesis, bindings_clause);
+    let Ok(bindings_clause) = TokenStream::from_str(&bindings_clause.to_string()) else {
+        return Err(())
+    };
+
+    let Ok(eq_token) = TokenStream::from_str("=") else {
+        return Err(())
+    };
+
+    let Ok(match_token) = TokenStream::from_str("match") else {
+        return Err(())
+    };
+
+    let get_token = match contains_mut {
+        true => ".get_mut",
+        false => ".get",
+    };
+    let Ok(get_token) = TokenStream::from_str(get_token) else {
+        return Err(())
+    }; 
+
+    let Ok(ok_token) = TokenStream::from_str("Ok(ok) => ok,") else {
+        return Err(())
+    };
+    let Ok(err_token) = TokenStream::from_str("Err(err) => ") else {
+        return Err(())
+    };
+    let exit_rule = Group::new(Delimiter::Brace, exit_rule.clone());
+    let Ok(exit_rule) = TokenStream::from_str(&exit_rule.to_string()) else {
+        return Err(())
+    };
+    let exit_rule_end_token = TokenStream::from_str(",") else {
+        return Err(())
+    };
+
+    let Ok(end_token) = TokenStream::from_str(";") else {
+        return Err(())
+    };
+
+    // Handle wildcard
+    let (entity_binding, entity_clause) = handle_wildcard(entity_clause, wildcard)?;
+
+    // Wrap in delimiters for query.
+    let entity_clause = Group::new(Delimiter::Parenthesis, entity_clause);
+    let Ok(entity_clause) = TokenStream::from_str(&entity_clause.to_string()) else {
+        return Err(())
+    };
+
+    // Assemble and wrap match block in delimiters.
+    let mut match_block = TokenStream::new();
+    match_block.extend(ok_token);
+    match_block.extend(err_token);
+    match_block.extend(exit_rule);
+    match_block.extend(exit_rule_end_token);
+    let match_block = Group::new(Delimiter::Brace, match_block);
+    let Ok(match_block) = TokenStream::from_str(&match_block.to_string()) else {
+        return Err(())
+    };
+
+    // Create assembly
+    let mut assembly = match entity_binding {
+        Some(entity_binding) => entity_binding,
+        None => TokenStream::new(),
+    };
+
+    // Assemble tokens
+    assembly.extend(let_token);
+    assembly.extend(bindings_clause);
+    assembly.extend(eq_token);
+    assembly.extend(query_clause);
+    assembly.extend(get_token);
+    assembly.extend(entity_clause);
+    assembly.extend(match_token);
+    assembly.extend(match_block);
+    assembly.extend(end_token);
+
+    // Add to package
+    package.extend(assembly);
+
+    return Ok(package);
+}
+
+fn let_else_construction(
+    mut package: TokenStream,
+    exit_rule: &TokenStream,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>),
     query_clause: Vec<TokenTree>,
@@ -51,7 +170,6 @@ pub(crate) fn construction_step(
         return Err(())
     };
 
-    let exit_rule = exit_rule.statement.clone();
     let exit_rule = Group::new(Delimiter::Brace, exit_rule.clone());
     let Ok(exit_rule) = TokenStream::from_str(&exit_rule.to_string()) else {
         return Err(())
@@ -62,45 +180,8 @@ pub(crate) fn construction_step(
     };
 
     // Handle wildcard
-    let (entity_binding, entity_clause) = match wildcard {
-        EntityWildcard::Direct => {
-            let Ok(entity_go) = TokenStream::from_str(TO_ENTITY_FN) else { 
-                return Err(())
-            };
-            entity_clause.extend(entity_go);
-
-            (None, entity_clause)
-        },
-        EntityWildcard::Literal => {
-            (None, entity_clause)
-        },
-        EntityWildcard::DeRefLiteral => {
-            let entity_binding = create_de_ref_literal_binding(entity_clause.clone());
-
-            (Some(entity_binding), entity_clause)
-        },
-        EntityWildcard::Overlap => {
-            let Ok(entity_binding) = create_overlap_entity_binding(entity_clause.clone()) else {
-                return Err(())
-            };
-
-            (Some(entity_binding), entity_clause)
-        },
-        EntityWildcard::Lifted => {
-            // Created lifted clause
-            let lifted_clause = match create_lifted_entity_clause(entity_clause.clone()) {
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            let Ok(entity_binding) = create_lifted_entity_binding(lifted_clause.clone(), entity_clause) else {
-                return Err(())
-            };
-
-            (Some(entity_binding), lifted_clause)
-        },
-    };
-
+    let (entity_binding, entity_clause) = handle_wildcard(entity_clause, wildcard)?;
+    
     // Wrap in delimiters for query.
     let entity_clause = Group::new(Delimiter::Parenthesis, entity_clause);
     let Ok(entity_clause) = TokenStream::from_str(&entity_clause.to_string()) else {
@@ -128,6 +209,50 @@ pub(crate) fn construction_step(
     package.extend(assembly);
 
     return Ok(package);
+}
+
+fn handle_wildcard(
+    mut entity_clause: TokenStream,
+    wildcard: EntityWildcard,
+) -> Result<(Option<TokenStream>, TokenStream), ()> {
+    match wildcard {
+        EntityWildcard::Direct => {
+            let Ok(entity_go) = TokenStream::from_str(TO_ENTITY_FN) else { 
+                return Err(())
+            };
+            entity_clause.extend(entity_go);
+
+            return Ok((None, entity_clause))
+        },
+        EntityWildcard::Literal => {
+            return Ok((None, entity_clause))
+        },
+        EntityWildcard::DeRefLiteral => {
+            let entity_binding = create_de_ref_literal_binding(entity_clause.clone());
+
+            return Ok((Some(entity_binding), entity_clause))
+        },
+        EntityWildcard::Overlap => {
+            let Ok(entity_binding) = create_overlap_entity_binding(entity_clause.clone()) else {
+                return Err(())
+            };
+
+            return Ok((Some(entity_binding), entity_clause))
+        },
+        EntityWildcard::Lifted => {
+            // Created lifted clause
+            let lifted_clause = match create_lifted_entity_clause(entity_clause.clone()) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+
+            let Ok(entity_binding) = create_lifted_entity_binding(lifted_clause.clone(), entity_clause) else {
+                return Err(())
+            };
+
+            return Ok((Some(entity_binding), lifted_clause))
+        },
+    };
 }
 
 fn create_de_ref_literal_binding(
