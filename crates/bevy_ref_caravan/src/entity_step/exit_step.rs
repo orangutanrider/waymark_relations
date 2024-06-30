@@ -2,9 +2,7 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::collect_until_punct::*, 
-    query_step::query_step, 
-    syntax_in::*, 
+    common::collect_until_punct::*, exit_rule_step::ExitRule, query_step::query_step, syntax_in::* 
 };
 
 use super::EntityWildcard;
@@ -12,7 +10,7 @@ use super::EntityWildcard;
 pub(super) fn entity_step_exit(
     caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
     is_nested: bool,
 
     current: TokenTree, 

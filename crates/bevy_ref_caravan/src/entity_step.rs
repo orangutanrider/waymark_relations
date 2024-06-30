@@ -4,6 +4,7 @@ mod nested_step; use nested_step::*;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
+use crate::exit_rule_step::ExitRule;
 use crate::syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER;
 use crate::nesting_exit::nesting_exit;
 use crate::wildcard_step::*;
@@ -11,7 +12,7 @@ use crate::wildcard_step::*;
 pub(crate) fn entity_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
     is_nested: bool,
 
     followed: bool, // If this step was proceeded by a NEXT combo, then nesting is allowed.

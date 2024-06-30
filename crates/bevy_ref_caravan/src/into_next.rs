@@ -2,6 +2,7 @@ use std::vec::IntoIter;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
+use crate::exit_rule_step::ExitRule;
 use crate::wildcard_step::*;
 use crate::query_step::query_step;
 use crate::syntax_in::*;
@@ -10,7 +11,7 @@ use crate::nesting_exit::nesting_exit;
 pub(crate) fn into_next_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
     is_nested: bool,
 
     mut bindings: IntoIter<Vec<TokenTree>>,
@@ -62,7 +63,7 @@ pub(crate) fn into_next_step_entrance(
 fn nested_into_next_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
 
     mut bindings: IntoIter<Vec<TokenTree>>,
 ) -> Result<(TokenIter, TokenStream), ()> {
@@ -85,7 +86,7 @@ fn nested_into_next_step_entrance(
 fn nested_into_next_step(
     mut caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
 
     current: TokenTree,
     indv_binding: Vec<TokenTree>,

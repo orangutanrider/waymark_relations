@@ -2,12 +2,13 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    into_next::*,
-    common::collect_until_punct::*,
-    construction_step::construction_step,
-    entity_step::entity_step_entrance,
-    wildcard_step::EntityWildcard,
-    syntax_in::*
+    common::collect_until_punct::*, 
+    construction_step::construction_step, 
+    entity_step::entity_step_entrance, 
+    exit_rule_step::*, 
+    into_next::*, 
+    syntax_in::*, 
+    wildcard_step::EntityWildcard
 };
 
 enum OverrideNext {
@@ -20,57 +21,48 @@ enum OverrideNext {
 pub(crate) fn exit_rule_override_step(
     mut caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>),
     query_clause: Vec<TokenTree>,
     bindings_clause: Vec<TokenTree>,
     contains_mut: bool,
+
+    bang_spacing: Spacing,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let Some(token) = caravan.next() else {
-        return Err(())
+    let entrance = match exit_rule_pre_processing_step(&mut caravan, bang_spacing) {
+        Ok(ok) => ok,
+        Err(err) => return Err(err),
     };
 
-    let (mut caravan, override_rule, next) = match token {
-        TokenTree::Group(group) => {
-            // Validate delimiter
-            if group.delimiter() != EXIT_RULE_DELIMITER {
-                return Err(())
-            }
-
-            // Collect group's tokens.
-            let exit_rule = group.stream();
-
+    let (mut caravan, override_rule, structure, next) = match entrance {
+        ExitRuleEntrance::GroupCollected(group, structure) => {
             let (caravan, next) = match validate_override_end(caravan, is_nested) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
 
-            (caravan, exit_rule, next)
+            (caravan, group, structure, next)
         },
-        _ => {
+        ExitRuleEntrance::InLineCollected(token, structure) => {
             let mut output = Vec::new();
             output.push(token);
 
-            let (caravan, mut exit_rule, next) = match collect_until_override_end(caravan, output, is_nested) {
+            let (caravan, mut collected_exit_rule, next) = match collect_until_override_end(caravan, output, is_nested) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
+            exit_rule_collection_post_processing_step(&mut collected_exit_rule);
 
-            match exit_rule.get(0) { // If token 0 is just an "r" then it will be re-created as a "return"
-            Some(exit_rule_0) => {
-                if exit_rule_0.to_string() == ABBREVIATED_RETURN {
-                    exit_rule[0] = TokenTree::Ident(Ident::new("return", exit_rule_0.span()));
-                }
-            },
-            None => {/* Do nothing */},
-        };
+            let collected_exit_rule = TokenStream::from_iter(collected_exit_rule.into_iter());
+            (caravan, collected_exit_rule, structure, next)
+        },
+    };
 
-            let exit_rule = TokenStream::from_iter(exit_rule.into_iter());
-
-            (caravan, exit_rule, next)
-        }
+    let override_rule = ExitRule{
+        statement: override_rule,
+        structure,
     };
 
     match next {

@@ -2,18 +2,11 @@ use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
 use crate::{
-    common::{collect_until_punct::*, *}, 
-    construction_step::construction_step, 
-    entity_step::*, 
-    exit_rule_override_step::exit_rule_override_step, 
-    query_step::QueryMutation, 
-    syntax_in::*,
-    into_next::*,
-    wildcard_step::EntityWildcard,
+    common::{collect_until_punct::*, *}, construction_step::construction_step, entity_step::*, exit_rule_override_step::exit_rule_override_step, exit_rule_step::ExitRule, into_next::*, query_step::QueryMutation, syntax_in::*, wildcard_step::EntityWildcard
 };
 
 enum BindingsNext {
-    ExitRuleOverride,
+    ExitRuleOverride(Spacing),
     Next,
     IntoNext,
     Escape,
@@ -22,7 +15,7 @@ enum BindingsNext {
 pub(crate) fn bindings_step(
     caravan: TokenIter, 
     package: TokenStream,
-    exit_rule: &TokenStream,
+    exit_rule: &ExitRule,
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>), 
@@ -44,7 +37,7 @@ pub(crate) fn bindings_step(
     };
 
     match next {
-        BindingsNext::ExitRuleOverride => return exit_rule_override_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause, bindings_clause, contains_mut),
+        BindingsNext::ExitRuleOverride(spacing) => return exit_rule_override_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause, bindings_clause, contains_mut, spacing),
         BindingsNext::Escape => {
             let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
@@ -100,7 +93,7 @@ fn collect_until_bindings_end(
 
     if token == EXIT_RULE_NOTATION {
         // Into override
-        return Ok((caravan, output, BindingsNext::ExitRuleOverride))
+        return Ok((caravan, output, BindingsNext::ExitRuleOverride(token.spacing())))
     }
 
     // Is valid singular token?
