@@ -6,7 +6,7 @@ use crate::{
 };
 
 enum BindingsNext {
-    ExitRuleOverride,
+    ExitRuleOverride(Spacing),
     Next,
     IntoNext,
     Escape,
@@ -37,7 +37,7 @@ pub(crate) fn bindings_step(
     };
 
     match next {
-        BindingsNext::ExitRuleOverride => return exit_rule_override_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause, bindings_clause, contains_mut),
+        BindingsNext::ExitRuleOverride(spacing) => return exit_rule_override_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause, bindings_clause, contains_mut, spacing),
         BindingsNext::Escape => {
             let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
@@ -93,7 +93,7 @@ fn collect_until_bindings_end(
 
     if token == EXIT_RULE_NOTATION {
         // Into override
-        return Ok((caravan, output, BindingsNext::ExitRuleOverride))
+        return Ok((caravan, output, BindingsNext::ExitRuleOverride(token.spacing())))
     }
 
     // Is valid singular token?

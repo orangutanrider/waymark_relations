@@ -44,14 +44,9 @@ pub(crate) fn exit_rule_step(
             let mut output = Vec::new();
             output.push(token);
 
-            let (_, caravan, mut collected_exit_rule) = collect_until_matching_punct(LINE_BREAK, caravan, output);
+            // Ill-suited function, the information of whether or not the punct was ever found is not needed.
+            let (_, caravan, mut collected_exit_rule) = collect_until_matching_punct(LINE_BREAK, caravan, output); 
             exit_rule_collection_post_processing_step(&mut collected_exit_rule);
-
-            // Technically, it doesn't matter to this whether one is or isn't found, rather that one is simply used to block the statement from encapsulating the entire caravan input.
-            // match end {
-            //     PunctMatch::Matching => {/* Proceed */},
-            //     PunctMatch::NotMatching => return Err(()), // An expected LINE_BREAK was never found.
-            // }
 
             let collected_exit_rule = TokenStream::from_iter(collected_exit_rule.into_iter());
             (caravan, collected_exit_rule, structure)
