@@ -29,7 +29,9 @@ pub(crate) fn collect_until_matching_punct(
     punct: char, 
     mut iter: TokenIter,
     mut output: Vec<TokenTree>,
-) -> (PunctMatch, TokenIter, Vec<TokenTree>) {
+    // Technically, why should this function even have a PunctMatch? It should say whether or not that was found at all, or simply not give that information at all.
+    // Something to update...
+) -> (PunctMatch, TokenIter, Vec<TokenTree>) { 
     // Next token.
     let token: Option<TokenTree> = iter.next();
     let Some(token) = token else {

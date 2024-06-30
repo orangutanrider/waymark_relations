@@ -24,7 +24,7 @@ pub(crate) const NEXT_BANG: char = NEXT[0];
 pub(crate) const INTO_BANG: char = INTO_NEXT[0];
 
 pub(crate) const EXIT_RULE_NOTATION: char = '?';
-pub(crate) const ERR_MATCH_NOTATION: [char; 2] = [EXIT_RULE_NOTATION, EXIT_RULE_NOTATION]; // ??
+pub(crate) const ERR_MATCH_NOTATION: char = '?'; // If this token is joined to the exit_rule notation as a combo (e.g. '??') then it'll do a match statement with err instead of a let else.
 pub(crate) const ABBREVIATED_RETURN: &str = "r";
 
 pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = [':', ':']; // ::
