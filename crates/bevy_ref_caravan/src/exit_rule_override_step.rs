@@ -31,39 +31,12 @@ pub(crate) fn exit_rule_override_step(
 
     bang_spacing: Spacing,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let entrance = match exit_rule_pre_processing_step(&mut caravan, bang_spacing) {
+    let (caravan, mut collected_exit_rule, next) = match collect_until_override_end(caravan, output, is_nested) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
-    let (mut caravan, override_rule, structure, next) = match entrance {
-        ExitRuleEntrance::GroupCollected(group, structure) => {
-            let (caravan, next) = match validate_override_end(caravan, is_nested) {
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            (caravan, group, structure, next)
-        },
-        ExitRuleEntrance::InLineCollected(token, structure) => {
-            let mut output = Vec::new();
-            output.push(token);
-
-            let (caravan, mut collected_exit_rule, next) = match collect_until_override_end(caravan, output, is_nested) {
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-            exit_rule_collection_post_processing_step(&mut collected_exit_rule);
-
-            let collected_exit_rule = TokenStream::from_iter(collected_exit_rule.into_iter());
-            (caravan, collected_exit_rule, structure, next)
-        },
-    };
-
-    let override_rule = ExitRule{
-        statement: override_rule,
-        structure,
-    };
+    todo!(); // Post-processing goes here
 
     match next {
         OverrideNext::Escape => {
