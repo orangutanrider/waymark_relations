@@ -90,7 +90,8 @@ pub(crate) fn exit_rule_collection_post_processing_step(
 
 pub(crate) enum ExitRuleEntrance {
     GroupCollected(TokenStream, ExitStructure),
-    InLineCollected(TokenTree, ExitStructure)
+    InLineCollected(TokenTree, ExitStructure),
+    Nothing(ExitStructure), // Given an empty decleration, it'll use default implementations for either structure.
 }
 
 pub(crate) enum ExitStructure{
