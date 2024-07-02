@@ -19,7 +19,7 @@ enum OverrideNext {
 
 // Exits into construction step
 pub(crate) fn exit_rule_override_step(
-    mut caravan: TokenIter, 
+    caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &ExitRule,
     is_nested: bool,
@@ -31,39 +31,12 @@ pub(crate) fn exit_rule_override_step(
 
     bang_spacing: Spacing,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let entrance = match exit_rule_pre_processing_step(&mut caravan, bang_spacing) {
+    let (mut caravan, proto_exit_rule, next) = match collect_until_override_end(caravan, Vec::new(), is_nested) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
-    let (mut caravan, override_rule, structure, next) = match entrance {
-        ExitRuleEntrance::GroupCollected(group, structure) => {
-            let (caravan, next) = match validate_override_end(caravan, is_nested) {
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            (caravan, group, structure, next)
-        },
-        ExitRuleEntrance::InLineCollected(token, structure) => {
-            let mut output = Vec::new();
-            output.push(token);
-
-            let (caravan, mut collected_exit_rule, next) = match collect_until_override_end(caravan, output, is_nested) {
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-            exit_rule_collection_post_processing_step(&mut collected_exit_rule);
-
-            let collected_exit_rule = TokenStream::from_iter(collected_exit_rule.into_iter());
-            (caravan, collected_exit_rule, structure, next)
-        },
-    };
-
-    let override_rule = ExitRule{
-        statement: override_rule,
-        structure,
-    };
+    let override_rule = exit_rule_post_processing(proto_exit_rule, bang_spacing)?;
 
     match next {
         OverrideNext::Escape => {
@@ -100,43 +73,6 @@ pub(crate) fn exit_rule_override_step(
 
             // Continue into query steps, feeding in individual bindings, until scope is exhausted.
             return into_next_step_entrance(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
-        },
-    }
-}
-
-fn validate_override_end(
-    mut caravan: TokenIter, 
-    is_nested: bool,
-) -> Result<(TokenIter, OverrideNext), ()> {
-    let token = caravan.next();
-    let Some(token) = token else { 
-        return Ok((caravan, OverrideNext::Escape))
-    };
-
-    let TokenTree::Punct(token) = token else { // Is Punct?
-        return Err(())
-    };
-
-    // Is valid singular token?
-    match is_nested {
-        true => {
-            if token == SCOPED_BREAK { // For nested the NEXT symbol is valid.
-                return Ok((caravan, OverrideNext::Escape))
-            }
-        },
-        false => {
-            if token == LINE_BREAK { // For un-nested the LINE_BREAK symbol is valid.
-                return Ok((caravan, OverrideNext::Escape))
-            }
-        },
-    }
-
-    // Is INTO_NEXT punct combo?
-    let (results, caravan, _) = match_one_punct_combo(NEXT.iter(), caravan, token, Vec::new());
-    match results {
-        PunctMatch::Matching => return Ok((caravan, OverrideNext::Next)),
-        _ => {
-            return Err(())
         },
     }
 }
