@@ -28,7 +28,6 @@ pub(crate) fn root_step(
         TokenTree::Punct(punct) => {
             match punct == EXIT_RULE_NOTATION {
                 true => {
-                    exit_rule.wipe();
                     let caravan = match exit_rule_step(caravan, &mut exit_rule, punct.spacing()) {
                         Ok(ok) => ok,
                         Err(err) => return Err(err),
