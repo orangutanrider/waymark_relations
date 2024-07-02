@@ -51,6 +51,13 @@ pub(crate) enum ExitStructure{
     IsLetElse
 }
 
+// Post-processing
+// If connected token, check if connected is a ?, if so then save the fact that it is an err_match structure.
+// If next token is a group, validate the delimiter, and save group as exit_rule.
+// Check the first token of the group, if it is an "r" then expand that to a "return".
+// If no group is found, then check the token to see if it is an "r" then expand that to a "return" also save the exit_rule.
+// Return data.
+
 pub(crate) fn exit_rule_post_processing(
     exit_rule: &mut Vec<TokenTree>,
 ) -> ExitStructure {
