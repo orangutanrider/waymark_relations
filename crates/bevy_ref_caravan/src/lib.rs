@@ -6,6 +6,7 @@ use syntax_out::exit_rule_default;
 
 // Caravan.
 mod root_step; use root_step::root_step;
+mod entity_pre_processing;
 mod exit_rule_step;
 mod entity_step;
 mod wildcard_step;
