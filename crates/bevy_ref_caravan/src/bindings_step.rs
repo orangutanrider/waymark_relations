@@ -46,7 +46,7 @@ pub(crate) fn bindings_step(
     match next {
         BindingsNext::ExitRuleOverride(spacing) => return exit_rule_override_step(caravan, package, exit_rule, pre_process, is_nested, entity_clause, query_clause, bindings_clause, contains_mut, spacing),
         BindingsNext::Escape => {
-            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+            let package = match construction_step(package, exit_rule, pre_process, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -54,7 +54,7 @@ pub(crate) fn bindings_step(
             return Ok((caravan, package));
         },
         BindingsNext::Next => {
-            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+            let package = match construction_step(package, exit_rule, pre_process, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -66,7 +66,7 @@ pub(crate) fn bindings_step(
             return entity_step_entrance(caravan, package, exit_rule, pre_process, is_nested, true, current);
         },
         BindingsNext::IntoNext => {
-            let package = match construction_step(package, exit_rule, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
+            let package = match construction_step(package, exit_rule, pre_process, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -116,7 +116,6 @@ fn collect_until_bindings_end(
             }
         },
     }
-
 
     if token == NEXT_BANG { 
         // match_one_punct_combo ill-suited function, inefficient computation.

@@ -13,6 +13,7 @@ use std::str::FromStr;
 pub(crate) fn construction_step(
     package: TokenStream,
     exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>),
     query_clause: Vec<TokenTree>,
@@ -20,20 +21,23 @@ pub(crate) fn construction_step(
     contains_mut: bool,
 ) -> Result<TokenStream, ()> {
     match exit_rule.structure {
-        ExitStructure::IsErrMatch => return err_match_construction(package, &exit_rule.statement, entity_clause, query_clause, bindings_clause, contains_mut),
-        ExitStructure::IsLetElse => return let_else_construction(package, &exit_rule.statement, entity_clause, query_clause, bindings_clause, contains_mut),
+        ExitStructure::IsErrMatch => return err_match_construction(package, &exit_rule.statement, pre_process, entity_clause, query_clause, bindings_clause, contains_mut),
+        ExitStructure::IsLetElse => return let_else_construction(package, &exit_rule.statement, pre_process, entity_clause, query_clause, bindings_clause, contains_mut),
     }
 }
 
 fn err_match_construction(
     mut package: TokenStream,
     exit_rule: &TokenStream,
+    pre_process: &Option<EntityPreProcess>,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>),
     query_clause: Vec<TokenTree>,
     bindings_clause: Vec<TokenTree>,
     contains_mut: bool,
 ) -> Result<TokenStream, ()> {
+    let mut assembly = TokenStream::new();
+
     // Unwrap entity clause
     let (wildcard, entity_clause) = entity_clause;
 
@@ -41,6 +45,22 @@ fn err_match_construction(
     let entity_clause = TokenStream::from_iter(entity_clause.into_iter());
     let query_clause = TokenStream::from_iter(query_clause.into_iter());
     let bindings_clause = TokenStream::from_iter(bindings_clause.into_iter());
+
+    // Handle pre-processing statement
+    let (wildcard, entity_clause) = match pre_process { 
+        Some(pre_process) => {
+            // Create and add pre-processing statement to assembly
+            let pre_processing_code = pre_process.create_pre_processing_code(entity_clause.clone());
+            assembly.extend(pre_processing_code);
+
+            // Overide entity_clause with suffixed one from pre processing statement
+            let entity_clause = pre_process.transform_entity_clause(entity_clause);
+
+            // Wildcards are overidden by pre-processing.
+            (EntityWildcard::Literal, entity_clause)
+        },
+        None => (wildcard, entity_clause),
+    };
 
     // Create tokens
     let Ok(let_token) = TokenStream::from_str("let") else {
@@ -102,9 +122,9 @@ fn err_match_construction(
     };
 
     // Create assembly
-    let mut assembly = match entity_binding {
-        Some(entity_binding) => entity_binding,
-        None => TokenStream::new(),
+    match entity_binding {
+        Some(entity_binding) => assembly.extend(entity_binding),
+        None => {/* Do Nothing */},
     };
 
     // Assemble tokens
@@ -127,19 +147,38 @@ fn err_match_construction(
 fn let_else_construction(
     mut package: TokenStream,
     exit_rule: &TokenStream,
+    pre_process: &Option<EntityPreProcess>,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>),
     query_clause: Vec<TokenTree>,
     bindings_clause: Vec<TokenTree>,
     contains_mut: bool,
 ) -> Result<TokenStream, ()> {
+    let mut assembly = TokenStream::new();
+
     // Unwrap entity clause
     let (wildcard, entity_clause) = entity_clause;
 
     // To streams
-    let mut entity_clause = TokenStream::from_iter(entity_clause.into_iter());
+    let entity_clause = TokenStream::from_iter(entity_clause.into_iter());
     let query_clause = TokenStream::from_iter(query_clause.into_iter());
     let bindings_clause = TokenStream::from_iter(bindings_clause.into_iter());
+
+    // Handle pre-processing statement
+    let (wildcard, entity_clause) = match pre_process { 
+        Some(pre_process) => {
+            // Create and add pre-processing statement to assembly
+            let pre_processing_code = pre_process.create_pre_processing_code(entity_clause.clone());
+            assembly.extend(pre_processing_code);
+
+            // Overide entity_clause with suffixed one from pre processing statement
+            let entity_clause = pre_process.transform_entity_clause(entity_clause);
+
+            // Wildcards are overidden by pre-processing.
+            (EntityWildcard::Literal, entity_clause)
+        },
+        None => (wildcard, entity_clause),
+    };
 
     // Create tokens
     let Ok(let_token) = TokenStream::from_str("let Ok") else {
@@ -187,9 +226,9 @@ fn let_else_construction(
     };
 
     // Create assembly
-    let mut assembly = match entity_binding {
-        Some(entity_binding) => entity_binding,
-        None => TokenStream::new(),
+    match entity_binding {
+        Some(entity_binding) => assembly.extend(entity_binding),
+        None => {/* Do Nothing */},
     };
 
     // Assemble tokens

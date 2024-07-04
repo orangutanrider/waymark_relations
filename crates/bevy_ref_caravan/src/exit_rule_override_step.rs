@@ -39,7 +39,7 @@ pub(crate) fn exit_rule_override_step(
 
     match next {
         OverrideNext::Escape => {
-            let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+            let package = match construction_step(package, &override_rule, pre_process, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -47,7 +47,7 @@ pub(crate) fn exit_rule_override_step(
             return Ok((caravan, package))
         },
         OverrideNext::Next => {
-            let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause, contains_mut) {
+            let package = match construction_step(package, &override_rule, pre_process, entity_clause, query_clause, bindings_clause, contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -59,7 +59,7 @@ pub(crate) fn exit_rule_override_step(
             return entity_step_entrance(caravan, package, exit_rule, pre_process, is_nested, true, current);
         },
         OverrideNext::IntoNext => {
-            let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
+            let package = match construction_step(package, &override_rule, pre_process, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
