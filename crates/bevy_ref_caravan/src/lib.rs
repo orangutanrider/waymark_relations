@@ -1,13 +1,12 @@
 mod common; use common::compile_error_stream;
 
 mod syntax_in; 
-mod syntax_out; use exit_rule_step::ExitRule;
-use syntax_out::exit_rule_default;
+mod syntax_out; 
 
 // Caravan.
 mod root_step; use root_step::root_step;
-mod entity_pre_processing;
-mod exit_rule_step;
+mod entity_pre_processing; 
+mod exit_rule_step; 
 mod entity_step;
 mod wildcard_step;
 mod into_next;
@@ -17,8 +16,12 @@ mod bindings_step;
 mod exit_rule_override_step;
 mod construction_step;
 
-use proc_macro::*;
-// use proc_macro::token_stream::IntoIter as TokenIter;
+pub(crate) use entity_pre_processing::EntityPreProcess;
+pub(crate) use exit_rule_step::ExitRule;
+
+pub(crate) use proc_macro::*;
+pub(crate) use proc_macro::token_stream::IntoIter as TokenIter;
+
 use std::str::FromStr;
 
 #[proc_macro]

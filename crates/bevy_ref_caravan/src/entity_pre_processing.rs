@@ -1,10 +1,8 @@
-use core::panic;
-use std::str::FromStr;
 
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
+use crate::*;
 use crate::syntax_in::{ENTITY_PRE_PROCESS_NOTATION, ENTITY_PRE_PROCESS_VAR, LINE_BREAK};
+
+use std::str::FromStr;
 
 /// The step that reads entity pre-processing statements, storing them.
 pub(crate) fn entity_pre_process_decleration_step(
@@ -20,7 +18,7 @@ pub(crate) fn entity_pre_process_decleration_step(
     };
 
     let suffix = match token {
-        TokenTree::Group(group) => { // No suffix, pre_processing will be shadowed by following statement.
+        TokenTree::Group(group) => { // No suffix, pre processing will be shadowed by following statement.
             if group.delimiter() != Delimiter::Brace {
                 return Err(());
             }

@@ -1,18 +1,18 @@
 mod exit_step; use exit_step::*;
 mod nested_step; use nested_step::*;
 
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
-use crate::exit_rule_step::ExitRule;
-use crate::syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER;
-use crate::nesting_exit::nesting_exit;
-use crate::wildcard_step::*;
+use crate::*;
+use crate::{
+    syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER,
+    nesting_exit::nesting_exit,
+    wildcard_step::*,
+};
 
 pub(crate) fn entity_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
     is_nested: bool,
 
     followed: bool, // If this step was proceeded by a NEXT combo, then nesting is allowed.
@@ -31,7 +31,7 @@ pub(crate) fn entity_step_entrance(
             }
 
             let nested_caravan: TokenIter = group.stream().into_iter();
-            let (_, package) = match nested_entity_step_entrance(nested_caravan, package, exit_rule) {
+            let (_, package) = match nested_entity_step_entrance(nested_caravan, package, exit_rule, pre_process) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -40,7 +40,7 @@ pub(crate) fn entity_step_entrance(
         },
         // Into single entity step
         TokenTree::Ident(_) => {
-            return entity_step_exit(caravan, package, exit_rule, is_nested, current, EntityWildcard::Direct);
+            return entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, current, EntityWildcard::Direct);
         },
         // Into wildcard step, entity step following.
         TokenTree::Punct(current) => {
@@ -53,7 +53,7 @@ pub(crate) fn entity_step_entrance(
                 return Err(())
             };
 
-            return entity_step_exit(caravan, package, exit_rule, is_nested, current, wildcard);
+            return entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, current, wildcard);
         },
         // Unexpected, throw error.
         TokenTree::Literal(_) => {

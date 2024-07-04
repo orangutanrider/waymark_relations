@@ -1,8 +1,8 @@
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
+use crate::*;
 
 use crate::{
-    common::collect_until_punct::*, exit_rule_step::ExitRule, query_step::query_step, syntax_in::* 
+    common::collect_until_punct::*, 
+    query_step::query_step, syntax_in::* 
 };
 
 use super::EntityWildcard;
@@ -11,6 +11,7 @@ pub(super) fn entity_step_exit(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
     is_nested: bool,
 
     current: TokenTree, 
@@ -26,7 +27,7 @@ pub(super) fn entity_step_exit(
         return Err(())
     };
 
-    return query_step(current, caravan, package, exit_rule, is_nested, (wildcard, entity_clause));
+    return query_step(current, caravan, package, exit_rule, pre_process, is_nested, (wildcard, entity_clause));
 }
 
 fn collect_entity_clause(

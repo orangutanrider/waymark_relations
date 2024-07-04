@@ -1,8 +1,9 @@
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
+use crate::*;
 use crate::{
-    bindings_step::bindings_step, common::collect_until_punct::*, exit_rule_step::ExitRule, syntax_in::*, wildcard_step::EntityWildcard
+    common::collect_until_punct::*,
+    syntax_in::*, 
+    bindings_step::bindings_step,  
+    wildcard_step::EntityWildcard
 };
 
 pub(crate) enum QueryMutation {
@@ -16,6 +17,7 @@ pub(crate) fn query_step(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>), 
@@ -25,7 +27,7 @@ pub(crate) fn query_step(
         Err(err) => return Err(err),
     };
 
-    return bindings_step(caravan, package, exit_rule, is_nested, entity_clause, query_clause) 
+    return bindings_step(caravan, package, exit_rule, pre_process, is_nested, entity_clause, query_clause) 
 }
 
 fn collect_query_clause(

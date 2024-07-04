@@ -1,13 +1,11 @@
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
+use crate::*;
 use crate::{
     common::collect_until_punct::*, 
+    syntax_in::*, 
     construction_step::construction_step, 
     entity_step::entity_step_entrance, 
     exit_rule_step::*, 
     into_next::*, 
-    syntax_in::*, 
     wildcard_step::EntityWildcard
 };
 
@@ -22,6 +20,7 @@ pub(crate) fn exit_rule_override_step(
     caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
     is_nested: bool,
 
     entity_clause: (EntityWildcard, Vec<TokenTree>),
@@ -57,7 +56,7 @@ pub(crate) fn exit_rule_override_step(
                 return Err(())
             };
 
-            return entity_step_entrance(caravan, package, exit_rule, is_nested, true, current);
+            return entity_step_entrance(caravan, package, exit_rule, pre_process, is_nested, true, current);
         },
         OverrideNext::IntoNext => {
             let package = match construction_step(package, &override_rule, entity_clause, query_clause, bindings_clause.clone(), contains_mut) {
@@ -72,7 +71,7 @@ pub(crate) fn exit_rule_override_step(
             };
 
             // Continue into query steps, feeding in individual bindings, until scope is exhausted.
-            return into_next_step_entrance(caravan, package, exit_rule, is_nested, indv_bindings.into_iter());
+            return into_next_step_entrance(caravan, package, exit_rule, pre_process, is_nested, indv_bindings.into_iter());
         },
     }
 }

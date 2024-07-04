@@ -1,11 +1,14 @@
-use std::str::FromStr;
-
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
+use crate::*;
 
 use crate::{
-    common::*, exit_rule_step::*, syntax_out::*, wildcard_step::EntityWildcard
+    common::*,
+    syntax_out::*, 
+    exit_rule_step::*, 
+    wildcard_step::EntityWildcard
 };
+
+use std::str::FromStr;
+
 
 pub(crate) fn construction_step(
     package: TokenStream,
