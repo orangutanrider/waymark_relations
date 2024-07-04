@@ -26,7 +26,7 @@ pub fn ref_caravan(input: TokenStream) -> TokenStream {
     let caravan = input.into_iter();
     let package = TokenStream::new();
     let exit_rule = ExitRule::default();
-    let (_, package, _) = match root_step(caravan, package, exit_rule) {
+    let (_, package, _, _) = match root_step(caravan, package, exit_rule, None) {
         Ok(ok) => ok,
         Err(err) => {
             return compile_error_stream("Undefined")

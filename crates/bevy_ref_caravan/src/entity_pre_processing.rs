@@ -4,30 +4,40 @@ use std::str::FromStr;
 use proc_macro::*;
 use proc_macro::token_stream::IntoIter as TokenIter;
 
-use crate::syntax_in::{ENTITY_PRE_PROCESS_NOTATION, ENTITY_PRE_PROCESS_VAR};
+use crate::syntax_in::{ENTITY_PRE_PROCESS_NOTATION, ENTITY_PRE_PROCESS_VAR, LINE_BREAK};
 
 /// The step that reads entity pre-processing statements, storing them.
 pub(crate) fn entity_pre_process_decleration_step(
     mut caravan: TokenIter, 
-    pre_process: &mut EntityPreProcess,
-) -> Result<TokenIter, ()> {
+) -> Result<(TokenIter, Option<EntityPreProcess>), ()> {
+    // If nothing wipe the pre-process statement.
     // Expect suffix or brace'd group
     // Expect brace'd group
     // Linebreak doesn't need to be validated or expected.
 
     let Some(token) = caravan.next() else {
-        return Err(())
+        return Ok((caravan, None))
     };
 
     let suffix = match token {
         TokenTree::Group(group) => { // No suffix, pre_processing will be shadowed by following statement.
-            pre_process.wipe();
-            pre_process.farm.extend(group.stream());
-            return Ok(caravan);
+            if group.delimiter() != Delimiter::Brace {
+                return Err(());
+            }
+
+            let pre_process = EntityPreProcess::new(group.stream(), None);
+            return Ok((caravan, Some(pre_process)));
         },
         TokenTree::Ident(ident) => { // Suffix declared
             ident.to_string()
         },
+        TokenTree::Punct(punct) => {
+            if punct != LINE_BREAK {
+                return Err(())
+            }
+
+            return Ok((caravan, None))
+        }
         _ => return Err(()), // Unexpected
     };
 
@@ -37,10 +47,12 @@ pub(crate) fn entity_pre_process_decleration_step(
 
     match token {
         TokenTree::Group(group) => {
-            pre_process.wipe();
-            pre_process.suffix = Some(suffix);
-            pre_process.farm.extend(group.stream());
-            return Ok(caravan);
+            if group.delimiter() != Delimiter::Brace {
+                return Err(());
+            }
+
+            let pre_process = EntityPreProcess::new(group.stream(), Some(suffix.to_string()));
+            return Ok((caravan, Some(pre_process)));
         },
         _ => return Err(()), // Unexpected
     }
@@ -86,9 +98,14 @@ impl EntityPreProcess {
         return output;
     }
 
-    pub(crate) fn wipe(&mut self) {
-        self.farm = TokenStream::new();
-        self.suffix = None;
+    pub(crate) fn new(
+        statement: TokenStream,
+        suffix: Option<String>,
+    ) -> Self {
+        return Self {
+            farm: statement,
+            suffix,
+        }
     }
 }
 
