@@ -4,7 +4,7 @@ use proc_macro::token_stream::IntoIter as TokenIter;
 use crate::{
     entity_step::entity_step_entrance,
     exit_rule_step::{exit_rule_step, ExitRule},
-    syntax_in::EXIT_RULE_NOTATION,
+    syntax_in::{EXIT_RULE_NOTATION, LINE_BREAK},
 };
 
 pub(crate) fn root_step(
@@ -26,6 +26,10 @@ pub(crate) fn root_step(
             return root_step(caravan, package, exit_rule)
         },
         TokenTree::Punct(punct) => {
+            if punct == LINE_BREAK { // Continue on line breaks
+                return root_step(caravan, package, exit_rule);
+            }
+
             match punct == EXIT_RULE_NOTATION {
                 true => {
                     let caravan = match exit_rule_step(caravan, &mut exit_rule, punct.spacing()) {
