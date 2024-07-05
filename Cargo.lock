@@ -3,9 +3,5 @@
 version = 3
 
 [[package]]
-name = "bevy_erma"
-version = "0.1.0"
-
-[[package]]
 name = "bevy_ref_caravan"
 version = "0.1.0"

@@ -1,8 +1,12 @@
 [package]
-name = "bevy_erma"
-version = "0.1.0"
-edition = "2021"
-authors = ["Dominic Rooney"]
+name = "bevy_ref_caravan"
 
-[workspace]
-members = ["crates/*"]
+version = "0.1.0"
+authors = ["Dominic Rooney"]
+edition = "2021"
+
+[lib]
+proc-macro = true   
+
+[features]
+no_assertions = []
