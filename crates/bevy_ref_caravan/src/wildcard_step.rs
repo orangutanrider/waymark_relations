@@ -2,6 +2,7 @@ use proc_macro::*;
 use crate::syntax_in::{DIRECT, LITERAL, DE_REF_LITERAL, OVERLAP, LIFT};
 
 pub(crate) enum EntityWildcard {
+    DefaultedDirect,
     Direct,
     Literal,
     DeRefLiteral,

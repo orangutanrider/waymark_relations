@@ -57,7 +57,7 @@ pub(crate) fn into_next_step_entrance(
                 return Err(())
             };
 
-            return query_step(current, caravan, package, exit_rule, pre_process, is_nested, (EntityWildcard::Direct, indv_binding));
+            return query_step(current, caravan, package, exit_rule, pre_process, is_nested, (EntityWildcard::DefaultedDirect, indv_binding));
         }, 
     }
 }
@@ -95,7 +95,7 @@ fn nested_into_next_step(
     current: TokenTree,
     indv_binding: Vec<TokenTree>,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let mut wildcard = EntityWildcard::Direct;
+    let mut wildcard = EntityWildcard::DefaultedDirect;
     let current = match current {
         TokenTree::Punct(punct) => {
             wildcard = match wildcard_step(punct) {

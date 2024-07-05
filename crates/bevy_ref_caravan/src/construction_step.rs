@@ -9,7 +9,6 @@ use crate::{
 
 use std::str::FromStr;
 
-
 pub(crate) fn construction_step(
     package: TokenStream,
     exit_rule: &ExitRule,
@@ -48,17 +47,7 @@ fn err_match_construction(
 
     // Handle pre-processing statement
     let (wildcard, entity_clause) = match pre_process { 
-        Some(pre_process) => {
-            // Create and add pre-processing statement to assembly
-            let pre_processing_code = pre_process.create_pre_processing_code(entity_clause.clone());
-            assembly.extend(pre_processing_code);
-
-            // Overide entity_clause with suffixed one from pre processing statement
-            let entity_clause = pre_process.transform_entity_clause(entity_clause);
-
-            // Wildcards are overidden by pre-processing.
-            (EntityWildcard::Literal, entity_clause)
-        },
+        Some(pre_process) => handle_pre_processing(pre_process, entity_clause, &mut assembly, wildcard),
         None => (wildcard, entity_clause),
     };
 
@@ -144,6 +133,27 @@ fn err_match_construction(
     return Ok(package);
 }
 
+fn handle_pre_processing(
+    pre_process: &EntityPreProcess, 
+    entity_clause: TokenStream, 
+    assembly: &mut TokenStream, 
+    wildcard: EntityWildcard
+) -> (EntityWildcard, TokenStream) {
+    match wildcard {
+        EntityWildcard::DefaultedDirect => {/* Proceed */},
+        _ => return (wildcard, entity_clause), // A declared wildcard overrides the pre-processing code
+    }
+
+    // Create and add pre-processing statement to assembly
+    let pre_processing_code = pre_process.create_pre_processing_code(entity_clause.clone());
+    assembly.extend(pre_processing_code);
+
+    // Overide entity_clause with suffixed one from pre processing statement
+    let entity_clause = pre_process.transform_entity_clause(entity_clause);
+
+    return (EntityWildcard::Literal, entity_clause)
+}
+
 fn let_else_construction(
     mut package: TokenStream,
     exit_rule: &TokenStream,
@@ -166,17 +176,7 @@ fn let_else_construction(
 
     // Handle pre-processing statement
     let (wildcard, entity_clause) = match pre_process { 
-        Some(pre_process) => {
-            // Create and add pre-processing statement to assembly
-            let pre_processing_code = pre_process.create_pre_processing_code(entity_clause.clone());
-            assembly.extend(pre_processing_code);
-
-            // Overide entity_clause with suffixed one from pre processing statement
-            let entity_clause = pre_process.transform_entity_clause(entity_clause);
-
-            // Wildcards are overidden by pre-processing.
-            (EntityWildcard::Literal, entity_clause)
-        },
+        Some(pre_process) => handle_pre_processing(pre_process, entity_clause, &mut assembly, wildcard),
         None => (wildcard, entity_clause),
     };
 
@@ -253,6 +253,14 @@ fn handle_wildcard(
     wildcard: EntityWildcard,
 ) -> Result<(Option<TokenStream>, TokenStream), ()> {
     match wildcard {
+        EntityWildcard::DefaultedDirect => {
+            let Ok(entity_go) = TokenStream::from_str(TO_ENTITY_FN) else { 
+                return Err(())
+            };
+            entity_clause.extend(entity_go);
+
+            return Ok((None, entity_clause))
+        }
         EntityWildcard::Direct => {
             let Ok(entity_go) = TokenStream::from_str(TO_ENTITY_FN) else { 
                 return Err(())

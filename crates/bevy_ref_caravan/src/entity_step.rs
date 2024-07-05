@@ -40,7 +40,7 @@ pub(crate) fn entity_step_entrance(
         },
         // Into single entity step
         TokenTree::Ident(_) => {
-            return entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, current, EntityWildcard::Direct);
+            return entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, current, EntityWildcard::DefaultedDirect);
         },
         // Into wildcard step, entity step following.
         TokenTree::Punct(current) => {
