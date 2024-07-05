@@ -1,17 +1,19 @@
-use std::vec::IntoIter;
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
+use crate::*;
 
-use crate::exit_rule_step::ExitRule;
-use crate::wildcard_step::*;
-use crate::query_step::query_step;
-use crate::syntax_in::*;
-use crate::nesting_exit::nesting_exit;
+use crate::{
+    wildcard_step::*,
+    query_step::query_step,
+    syntax_in::*,
+    nesting_exit::nesting_exit,
+};
+
+use std::vec::IntoIter;
 
 pub(crate) fn into_next_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
     is_nested: bool,
 
     mut bindings: IntoIter<Vec<TokenTree>>,
@@ -27,7 +29,7 @@ pub(crate) fn into_next_step_entrance(
             }
 
             let nested_caravan: TokenIter = group.stream().into_iter();
-            let (_, package) = match nested_into_next_step_entrance(nested_caravan, package, exit_rule, bindings) {
+            let (_, package) = match nested_into_next_step_entrance(nested_caravan, package, exit_rule, pre_process, bindings) {
                 Ok(ok) => ok,
                 Err(err) => return Err(err),
             };
@@ -48,14 +50,14 @@ pub(crate) fn into_next_step_entrance(
                 return Err(())
             };
 
-            return query_step(current, caravan, package, exit_rule, is_nested, (wildcard, indv_binding));
+            return query_step(current, caravan, package, exit_rule, pre_process, is_nested, (wildcard, indv_binding));
         },
         _ => {
             let Some(indv_binding) = bindings.next() else {
                 return Err(())
             };
 
-            return query_step(current, caravan, package, exit_rule, is_nested, (EntityWildcard::Direct, indv_binding));
+            return query_step(current, caravan, package, exit_rule, pre_process, is_nested, (EntityWildcard::DefaultedDirect, indv_binding));
         }, 
     }
 }
@@ -64,6 +66,7 @@ fn nested_into_next_step_entrance(
     mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
 
     mut bindings: IntoIter<Vec<TokenTree>>,
 ) -> Result<(TokenIter, TokenStream), ()> {
@@ -75,23 +78,24 @@ fn nested_into_next_step_entrance(
         return Err(())
     };
 
-    let (caravan, package) = match nested_into_next_step(caravan, package, exit_rule, current, indv_binding) {
+    let (caravan, package) = match nested_into_next_step(caravan, package, exit_rule, pre_process, current, indv_binding) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
 
-    return nested_into_next_step_entrance(caravan, package, exit_rule, bindings);
+    return nested_into_next_step_entrance(caravan, package, exit_rule, pre_process, bindings);
 }
 
 fn nested_into_next_step(
     mut caravan: TokenIter, 
     package: TokenStream,
     exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
 
     current: TokenTree,
     indv_binding: Vec<TokenTree>,
 ) -> Result<(TokenIter, TokenStream), ()> {
-    let mut wildcard = EntityWildcard::Direct;
+    let mut wildcard = EntityWildcard::DefaultedDirect;
     let current = match current {
         TokenTree::Punct(punct) => {
             wildcard = match wildcard_step(punct) {
@@ -108,7 +112,7 @@ fn nested_into_next_step(
         _ => { current }
     };
 
-    return query_step(current, caravan, package, exit_rule, true, (wildcard, indv_binding));
+    return query_step(current, caravan, package, exit_rule, pre_process, true, (wildcard, indv_binding));
 }
 
 pub(crate) fn collect_individual_bindings(bindings_clause: Vec<TokenTree>) -> Result<Vec<Vec<TokenTree>>, ()> {

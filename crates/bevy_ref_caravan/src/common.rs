@@ -1,8 +1,8 @@
 pub(crate) mod collect_until_punct;
 
+use crate::*;
+
 use std::str::*;
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
 
 /// Insertion vulnerable. Input message is flanked by " ", if the input message contains quotes, then it must also contain extra \ to flag those quotes.
 pub(crate) fn compile_error_stream(msg_insert: &str) -> TokenStream {

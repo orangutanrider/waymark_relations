@@ -1,6 +1,4 @@
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
+use crate::*;
 use crate::common::collect_until_punct::*;
 use crate::syntax_in::{ABBREVIATED_RETURN, ERR_MATCH_NOTATION, EXIT_RULE_DELIMITER, LINE_BREAK};
 use crate::syntax_out::*;

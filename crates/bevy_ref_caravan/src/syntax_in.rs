@@ -29,3 +29,6 @@ pub(crate) const ABBREVIATED_RETURN: &str = "r";
 
 pub(crate) const ENTITY_TO_QUERY_PUNCT: [char; 2] = [':', ':']; // ::
 pub(crate) const QUERY_TO_BINDINGS_PUNCT: char = '=';
+
+pub(crate) const ENTITY_PRE_PROCESS_NOTATION: char = '$';
+pub(crate) const ENTITY_PRE_PROCESS_VAR: char = '%';

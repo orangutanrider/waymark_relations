@@ -1,6 +1,4 @@
-use proc_macro::*;
-use proc_macro::token_stream::IntoIter as TokenIter;
-
+use crate::*;
 use crate::syntax_in::{LINE_BREAK, SCOPED_BREAK};
 
 /// This comes after the end of the scope
