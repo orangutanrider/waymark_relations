@@ -1,4 +1,4 @@
-use bevy_ref_caravan::*;
+use bevy_caravan::*;
 
 #[test]
 fn err_match_ref_caravan() {

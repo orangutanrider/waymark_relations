@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "bevy_ref_caravan"
+name = "bevy_caravan"
 version = "0.1.0"

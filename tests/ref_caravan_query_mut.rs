@@ -1,4 +1,4 @@
-use bevy_ref_caravan::*;
+use bevy_caravan::*;
 
 #[test]
 fn query_step_mutation_ref_caravan() {

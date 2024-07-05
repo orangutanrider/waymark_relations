@@ -1,4 +1,4 @@
-use bevy_ref_caravan::*;
+use bevy_caravan::*;
 
 #[test]
 fn abbreviated_return_exit_rule() {

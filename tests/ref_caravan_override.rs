@@ -1,4 +1,4 @@
-use bevy_ref_caravan::*;
+use bevy_caravan::*;
 
 #[test]
 fn single_line_override_ref_caravan() {
