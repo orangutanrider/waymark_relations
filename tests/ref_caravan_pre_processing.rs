@@ -11,7 +11,7 @@ fn pre_processing_test() {
 
         to_oranges :: oranges_q = oranges;
     ) (
-        let to_oranges_dest = Some(oranges.go()) else {
+        let to_oranges_dest = Some(to_oranges.go()) else {
             continue;
         };
         let Ok(oranges) = oranges_q.get(to_oranges_dest) else {
@@ -33,7 +33,7 @@ fn dropped_pre_processing_test() {
         $;
         to_apples :: apples_q = apples;
     ) (
-        let to_oranges_dest = Some(oranges.go()) else {
+        let to_oranges_dest = Some(to_oranges.go()) else {
             continue;
         };
         let Ok(oranges) = oranges_q.get(to_oranges_dest) else {
