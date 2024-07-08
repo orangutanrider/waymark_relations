@@ -17,14 +17,6 @@ pub(crate) fn root_step(
     };
 
     match token {
-        TokenTree::Ident(_) => {
-            let (caravan, package) = match entity_step_entrance(caravan, package, &exit_rule, &pre_process, false, false, token) {
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-        
-            return root_step(caravan, package, exit_rule, pre_process)
-        },
         TokenTree::Punct(punct) => { match punct.as_char() {
             LINE_BREAK => return root_step(caravan, package, exit_rule, pre_process),
             ENTITY_PRE_PROCESS_NOTATION => {
@@ -52,6 +44,13 @@ pub(crate) fn root_step(
                 return root_step(caravan, package, exit_rule, pre_process)
             },
         }},
-        _ => return Err(()),
+        _ => {
+            let (caravan, package) = match entity_step_entrance(caravan, package, &exit_rule, &pre_process, false, false, token) {
+                Ok(ok) => ok,
+                Err(err) => return Err(err),
+            };
+        
+            return root_step(caravan, package, exit_rule, pre_process)
+        },
     }
 }

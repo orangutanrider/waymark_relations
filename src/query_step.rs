@@ -43,13 +43,33 @@ fn collect_query_clause(
     else {
         output.push(current);
     }
-
     
     let (result, iter, output) = collect_until_matching_punct(QUERY_TO_BINDINGS_PUNCT, caravan, output);
 
     match result {
-        PunctMatch::Matching => return Ok((iter, (output, mutation))),
+        PunctMatch::Matching => {/* Proceed */},
         PunctMatch::NotMatching => return Err(()),
         // PunctMatch::ConnectedMatch => return Err(()),
+    }
+
+    let Some(token0) = output.get(0) else {
+        return Err(())
+    };
+    let token1 = output.get(1);
+
+    match token1 {
+        Some(_) => return Ok((iter, (output, mutation))), // Exit with collection
+        None => {/* Proceed */},
+    }
+
+    match token0 {
+        TokenTree::Group(group) => { match group.delimiter() {
+            RAW_INPUT_DELIMITER => {
+                let output = group.stream().into_iter().collect();
+                return Ok((iter, (output, mutation))) // Exit with group as raw input (If the only token collected is group, and the group has the correct delimiter)
+            },
+            _ => return Ok((iter, (output, mutation))), // Exit with collection
+        }},
+        _ => return Ok((iter, (output, mutation))), // Exit with collection
     }
 }

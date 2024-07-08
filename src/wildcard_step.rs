@@ -3,6 +3,7 @@ use crate::syntax_in::{DIRECT, LITERAL, DE_REF_LITERAL, OVERLAP, LIFT};
 
 pub(crate) enum EntityWildcard {
     DefaultedDirect,
+    DefaultedLiteral,
     Direct,
     Literal,
     DeRefLiteral,
