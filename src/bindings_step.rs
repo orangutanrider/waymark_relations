@@ -28,21 +28,53 @@ pub(crate) fn bindings_step(
     entity_clause: (EntityWildcard, Vec<TokenTree>), 
     query_clause: (Vec<TokenTree>, QueryMutation),
 ) -> Result<(TokenIter, TokenStream), ()> {
+    // Collect
     let (mut caravan, bindings_clause, next) = match collect_until_bindings_end(caravan, Vec::new(), is_nested) {
         Ok(ok) => ok,
         Err(err) => return Err(err),
     };
     
-    // Unwrap query clause, and check for mutation
-    let (query_clause, contains_mut) = match query_clause.1 {
-        QueryMutation::GetMut => (query_clause.0, true),
-        QueryMutation::Get => {
-            let mut_iter = bindings_clause.iter();
-            let contains_mut = contains_mut_recursive(mut_iter);
-            (query_clause.0, contains_mut)
+    // Check for raw input
+    let Some(token0) = bindings_clause.get(0) else {
+        return Err(())
+    };
+    let token1 = bindings_clause.get(1);
+
+    let raw_bindings = match token0 {
+        TokenTree::Group(group) => { match group.delimiter() {
+            RAW_INPUT_DELIMITER => {
+                match token1 {
+                    Some(_) => None,
+                    None => Some(group.stream()),
+                }
+            },
+            _ => None,
+        }},
+        _ => None,
+    };
+    
+    // Unwrap clauses and check for mutation for non-raw inputs
+    let (query_clause, contains_mut, bindings_clause) = match raw_bindings {
+        Some(raw_bindings) => {
+            let contains_mut = match query_clause.1 {
+                QueryMutation::GetMut => true,
+                QueryMutation::Get => false,
+            };
+            (query_clause.0, contains_mut, raw_bindings.into_iter().collect())
+        },
+        None => {
+            match query_clause.1 {
+                QueryMutation::GetMut => (query_clause.0, true, bindings_clause),
+                QueryMutation::Get => {
+                    let mut_iter = bindings_clause.iter();
+                    let contains_mut = contains_mut_recursive(mut_iter);
+                    (query_clause.0, contains_mut, bindings_clause)
+                },
+            }
         },
     };
 
+    // Exit
     match next {
         BindingsNext::ExitRuleOverride(spacing) => return exit_rule_override_step(caravan, package, exit_rule, pre_process, is_nested, entity_clause, query_clause, bindings_clause, contains_mut, spacing),
         BindingsNext::Escape => {
