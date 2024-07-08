@@ -141,6 +141,7 @@ fn handle_pre_processing(
 ) -> (EntityWildcard, TokenStream) {
     match wildcard {
         EntityWildcard::DefaultedDirect => {/* Proceed */},
+        EntityWildcard::DefaultedLiteral => {/* Proceed */},
         _ => return (wildcard, entity_clause), // A declared wildcard overrides the pre-processing code
     }
 
@@ -260,7 +261,7 @@ fn handle_wildcard(
             entity_clause.extend(entity_go);
 
             return Ok((None, entity_clause))
-        }
+        },
         EntityWildcard::Direct => {
             let Ok(entity_go) = TokenStream::from_str(TO_ENTITY_FN) else { 
                 return Err(())
@@ -269,9 +270,8 @@ fn handle_wildcard(
 
             return Ok((None, entity_clause))
         },
-        EntityWildcard::Literal => {
-            return Ok((None, entity_clause))
-        },
+        EntityWildcard::DefaultedLiteral => return Ok((None, entity_clause)),
+        EntityWildcard::Literal => return Ok((None, entity_clause)),
         EntityWildcard::DeRefLiteral => {
             let entity_binding = create_de_ref_literal_binding(entity_clause.clone());
 

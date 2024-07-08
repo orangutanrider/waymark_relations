@@ -7,6 +7,25 @@ use crate::{
 
 use super::EntityWildcard;
 
+pub(super) fn raw_entity_step_exit(
+    mut caravan: TokenIter, 
+    package: TokenStream,
+    exit_rule: &ExitRule,
+    pre_process: &Option<EntityPreProcess>,
+    is_nested: bool,
+
+    group: TokenStream, 
+    wildcard: EntityWildcard, 
+) -> Result<(TokenIter, TokenStream), ()> {
+    let entity_clause = group.into_iter().collect();
+
+    let Some(current) = caravan.next() else {
+        return Err(())
+    };
+    
+    return query_step(current, caravan, package, exit_rule, pre_process, is_nested, (wildcard, entity_clause));
+}
+
 pub(super) fn entity_step_exit(
     caravan: TokenIter, 
     package: TokenStream,

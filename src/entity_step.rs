@@ -3,7 +3,7 @@ mod nested_step; use nested_step::*;
 
 use crate::*;
 use crate::{
-    syntax_in::ENTIY_STEP_SCOPABLE_DELIMITER,
+    syntax_in::*,
     nesting_exit::nesting_exit,
     wildcard_step::*,
 };
@@ -19,25 +19,24 @@ pub(crate) fn entity_step_entrance(
     current: TokenTree,
 ) -> Result<(TokenIter, TokenStream), ()> {
     match current {
-        // Into nested entity step
-        TokenTree::Group(group) => {
-            match followed {
-                true => { /* Proceed */ },
-                false => return Err(()),
-            }
-
-            if group.delimiter() != ENTIY_STEP_SCOPABLE_DELIMITER {
-                return Err(())
-            }
-
-            let nested_caravan: TokenIter = group.stream().into_iter();
-            let (_, package) = match nested_entity_step_entrance(nested_caravan, package, exit_rule, pre_process) {
-                Ok(ok) => ok,
-                Err(err) => return Err(err),
-            };
-
-            return nesting_exit(caravan, package, is_nested);
-        },
+        TokenTree::Group(group) => { match group.delimiter() {
+            ENTIY_STEP_SCOPABLE_DELIMITER => { // Into nested entity step
+                match followed {
+                    true => { /* Proceed */ },
+                    false => return Err(()),
+                }
+    
+                let nested_caravan: TokenIter = group.stream().into_iter();
+                let (_, package) = match nested_entity_step_entrance(nested_caravan, package, exit_rule, pre_process) {
+                    Ok(ok) => ok,
+                    Err(err) => return Err(err),
+                };
+    
+                return nesting_exit(caravan, package, is_nested);
+            },
+            RAW_INPUT_DELIMITER => return raw_entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, group.stream(), EntityWildcard::DefaultedLiteral), // Raw Input
+            _ => return Err(())
+        }},
         // Into single entity step
         TokenTree::Ident(_) => {
             return entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, current, EntityWildcard::DefaultedDirect);
@@ -53,7 +52,13 @@ pub(crate) fn entity_step_entrance(
                 return Err(())
             };
 
-            return entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, current, wildcard);
+            match current {
+                TokenTree::Group(group) => { match group.delimiter() {
+                    RAW_INPUT_DELIMITER => return raw_entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, group.stream(), wildcard), // Raw Input
+                    _ => return Err(()),
+                }},
+                _ => return entity_step_exit(caravan, package, exit_rule, pre_process, is_nested, current, wildcard),
+            }
         },
         // Unexpected, throw error.
         TokenTree::Literal(_) => {
