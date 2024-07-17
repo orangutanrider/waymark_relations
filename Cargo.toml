@@ -1,6 +1,9 @@
 [package]
 name = "bevy_caravan"
-
+description = "A function-like proc macro designed for making expressing Bevy's query.get statements easier."
+keywords = ["bevy", "macro"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/orangutanrider/bevy_caravan"
 version = "0.1.0"
 authors = ["Dominic Rooney"]
 edition = "2021"
