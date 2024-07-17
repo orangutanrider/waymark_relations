@@ -1,4 +1,5 @@
-![Caravan Whiteboard Banner](https://github.com/user-attachments/assets/7785f155-1693-4a19-a601-3e5889af102c)
+
+![Caravan Whiteboard Banner](https://github.com/user-attachments/assets/8d50f5a6-f457-48bf-b5f6-6a6fc5cc43c3)
 =
 Caravan is a function-like procedural macro built to make expressing query.get statements easier. For this goal, it employs a minature programming language that is written into the function parameters; Example shown below.
 ```Rust
