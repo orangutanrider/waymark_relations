@@ -7,6 +7,6 @@ ref_caravan!(entity :: query = bindings);
 ```
 This code would expand into the following:
 ```Rust
-let Ok(bindings) = query.get(entity) else { return; };
+let Ok(bindings) = query.get(entity) else { continue; };
 ```
 That's the most basic, and expected to be the most common, use-case. The macro has a wide range of additional features, enabling it to be more flexible. Caravan is currently a work in progress but it's primary functions are finished. Documentation is planned but not finished; The best way to understand the macro as of now would be to take a look at the tests that have been written for it: https://github.com/orangutanrider/bevy_caravan/tree/main/tests
