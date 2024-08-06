@@ -1,0 +1,24 @@
+# Package
+[package]
+name = "bevy_hubera"
+version = "0.1.0"
+keywords = ["bevy", "macro"]
+edition.workspace = true
+authors = ["Dominic_Rooney"]
+
+[dependencies]
+bevy_caravan = { version = "0.1.0", features = ["no_assertions"] }
+
+# Workspace
+[workspace]
+members = ["crates/*"]
+
+[workspace.package]
+edition = "2021"
+
+# Profile
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
