@@ -29,6 +29,8 @@ The design of ref caravan's Rust-macro format.
 
 As an automation of code; An abbreviation of code; A macro implicitly has the goals of being [Quick to Write] and [Readable].
 
+The explicit way in which ref caravan is [Quick to Write], is by automating the handling of the query result.
+
 Design goals:
 [Rust-like]
 [Minimal]
