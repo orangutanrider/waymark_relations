@@ -31,7 +31,7 @@ It is a generic functionality, that can be used in multiple ways, configurable t
 What is it about a unique transmission that would require someone to define a new system and component?
 If we wanted to transmit physics-data, and we wanted this to be composable so that we don't have to define systems and components related to this transmission, for each composition; We may consider defining the following waymark, for the physics functionality:
 
-```Rust
+```
 /// Component
 /// Waymark
 struct ToPhysics(Entity);
@@ -42,14 +42,14 @@ If the transmitting systems have their own flagging components and are kept sepe
 
 The "ToPhysics" waymark cannot point to two different entities at once, and you cannot have multiple of them per-entity. In the context of the composition, you could fix this by defining new components and systems, like so:
 
-```Rust
+```
 /// Component
 /// Waymark
 struct ToCharacterPhysics(Entity);
 impl ToCharacterPhysics { ... }
 ```
 
-```Rust
+```
 /// Component
 /// Waymark
 struct ToTailPhysics(Entity);
@@ -67,7 +67,7 @@ The transmission is defined by its targeting of two components A and B, and its 
 
 The origin of the transmission is not necessarily in the context of either A or B, and the data local to the origin is potentially relevant to the mutation of B; I will only consider cases where all relevant data comes from A; The question of whether or not it is local to either isn't of concern in this case.
 
-```Rust
+```
 /// T.
 /// An A to B transformation signature type definition.
 trait TransformationSignature<A, B>
@@ -84,7 +84,7 @@ where
 
 *Unoptimized, Rust-based, declarative pseudo-code*
 
-``` Rust
+```
 /// A transmitter that transmits its data directly.
 trait DirectTransmitter<A, B> 
 where
@@ -121,7 +121,7 @@ fn a_to_b_transmission<A, B, T>(
 
 ### Example usage
 
-```Rust
+```
 struct NavigationToLocomotion(Vec<(Entity, Entity)>)
 impl TransformationSignature<A, B> for NavigationToLocomotion {
     fn transmit(a: &A, b: &mut B) { ... }
@@ -144,7 +144,7 @@ With that, the transmitter components become generic functionality that can be u
 
 *Unoptimized, Rust-based, declarative pseudo-code*
 
-``` Rust
+```
 /// Unique transmission key
 struct TKey{
     a: HubKey,
@@ -206,7 +206,7 @@ fn a_to_b_hub_transmission<A, B, T>(
 
 ### Example usage
 
-```Rust
+```
 // Composition
 
 /// Component set
